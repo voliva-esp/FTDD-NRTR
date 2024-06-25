@@ -56,7 +56,14 @@ To run your own circuit, put the `QASM` file (e.g., `my_circ.qasm`) in `/Benchma
 To further adapth FTDD for your own use cases, please feel free to customize `/TestFTDD/DemoFTDD.py`.
 <br>
 
-## Re-producing FTDD Experimental Results
+To verify FTDD correctness, in the project root folder, run
+```sh
+make verify
+```
+This will simulate all the circuits in `/Benchmarks/Verification` using IBM Qiskit AER, [PyTDD](https://github.com/Veriqc/TDD), and FTDD, and compare their fidelities. Check the log file `/TestFTDD/log/VerifyFTDD.log` for results.
+<br>
+
+## Reproducing FTDD Experimental Results
 
 ## Citation
 
