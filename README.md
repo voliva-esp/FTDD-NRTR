@@ -1,6 +1,6 @@
 # Fast Tensor Decision Diagram
 
-Quantum Circuit Simulation with Fast Tensor Decision Diagram
+Fast Tensor Decision Diagram (FTDD) is a novel open-source software framework for quantum circuit simulation (QCS). It uses tensor decision diagram (TDD) as the backend. It involves a series of tensor network level optimizations as preprocessing to the input quantum circuit. We re-designed the TDD backend in C++ and incorporated a few data structural optimizations from binary decision diagram to futher optimize the performance.
 
 ## Prerequisites
 
