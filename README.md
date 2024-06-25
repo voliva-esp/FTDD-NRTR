@@ -2,7 +2,7 @@
 
 This project is actively being documented. Please check back later for detailed information on dependency, usage, and other important details.
 
-## 1. Dependency
+## 1. Prerequisites
 
 Ensure you have the following installed:
 - Linux (e.g., Ubuntu 20.04 LTS or RHEL 8)
@@ -33,7 +33,8 @@ conda install -c conda-forge pybind11
 ```
 <br>
 
-Build FTDD backend:
+## 2. Building the Project
+In the project root folder, run
 ```sh
 cd /source/cpp/
 mkdir build
