@@ -53,14 +53,14 @@ make demo CIR=inst_4x4_10_8
 ```
 This will simulate a 16-qubit depth-10 [Google random quantum circuit](https://github.com/sboixo/GRCS) instance using both [PyTDD](https://github.com/Veriqc/TDD) and FTDD, and compare their performance.
 To run your own circuit, put the `QASM` file (e.g., `my_circ.qasm`) in `/Benchmarks/Verification`, and replace `CIR` in the above command with the circuit instance name (e.g., `my_circ`).
-To further adapth FTDD for your own use cases, please feel free to customize `/TestFTDD/DemoFTDD.py`.
+To further adapth FTDD for your own use cases, please feel free to customize `/TestFTDD/DemoFTDD.py`.<br>
 <br>
 
 To verify FTDD correctness, in the project root folder, run
 ```sh
 make verify
 ```
-This will simulate all the circuits in `/Benchmarks/Verification` using IBM Qiskit AER, [PyTDD](https://github.com/Veriqc/TDD), and FTDD, and compare their fidelities. Check the log file `/TestFTDD/log/VerifyFTDD.log` for results.
+This will simulate all the circuits in `/Benchmarks/Verification` using IBM Qiskit AER, [PyTDD](https://github.com/Veriqc/TDD), and FTDD, and compare their fidelities. Check the log file `/TestFTDD/log/VerifyFTDD.log` for results. <br>
 <br>
 
 ## Reproducing FTDD Experimental Results
