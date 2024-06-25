@@ -5,6 +5,7 @@ This project is actively being documented. Please check back later for detailed 
 ## 1. Dependency
 
 Ensure you have the following installed:
+- Linux (e.g., Ubuntu 20.04 LTS or RHEL 8)
 - Anaconda
 - GCC version >= 9.1
 - CMake version >= 3.10
@@ -15,6 +16,14 @@ Create and activate a conda virtual environment with Python 3.8.15:
 conda create --name myenv python=3.8.15
 conda activate myenv
 ```
+<br>
+
+Install Python dependencies:
+```sh
+pip install -r requirements.txt
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+```
+<br>
 
 ## 2. Usage (Coming Soon)
 
