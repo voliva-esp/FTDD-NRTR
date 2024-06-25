@@ -25,6 +25,24 @@ conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 <br>
 
+Install C/C++ dependencies:
+```sh
+conda install -c conda-forge eigen
+conda install -c conda-forge graphviz
+conda install -c conda-forge pybind11
+```
+<br>
+
+Build FTDD backend:
+```sh
+cd /source/cpp/
+mkdir build
+cd build
+cmake ..
+make
+```
+<br>
+
 ## 2. Usage (Coming Soon)
 
 ## 3. Re-producing FTDD Experimental Results (Coming Soon)
