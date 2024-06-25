@@ -2,7 +2,7 @@
 
 This project is actively being documented. Please check back later for detailed information on dependency, usage, and other important details.
 
-## 1. Prerequisites
+## Prerequisites
 
 Ensure you have the following installed:
 - Linux (e.g., Ubuntu 20.04 LTS or RHEL 8)
@@ -33,7 +33,8 @@ conda install -c conda-forge pybind11
 ```
 <br>
 
-## 2. Building the Project
+## Building the Project
+
 In the project root folder, run
 ```sh
 cd /source/cpp/
@@ -44,7 +45,7 @@ make
 ```
 <br>
 
-## 2. Usage (Coming Soon)
+## Running the Project
 
 ## 3. Re-producing FTDD Experimental Results (Coming Soon)
 
