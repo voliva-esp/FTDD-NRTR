@@ -2,7 +2,18 @@
 
 This project is actively being documented. Please check back later for detailed information on dependency, usage, and other important details.
 
-## 1. Dependency (Coming Soon)
+## 1. Dependency
+
+Ensure you have the following installed:
+- Anaconda
+- GCC version >= 9.1
+- CMake version >= 3.10
+
+Create and activate a conda virtual environment with Python 3.8.15:
+```sh
+conda create --name myenv python=3.8.15
+conda activate myenv
+```
 
 ## 2. Usage (Coming Soon)
 
