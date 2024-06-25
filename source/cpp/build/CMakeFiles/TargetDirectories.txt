@@ -1,3 +1,0 @@
-/home/qiruizh/QCS/FTDD/source/cpp/build/CMakeFiles/rebuild_cache.dir
-/home/qiruizh/QCS/FTDD/source/cpp/build/CMakeFiles/edit_cache.dir
-/home/qiruizh/QCS/FTDD/source/cpp/build/CMakeFiles/cTDD.dir
