@@ -64,7 +64,7 @@ This will simulate all the circuits in `/Benchmarks/Verification` using [IBM Qis
 <br>
 
 ## Reproducing FTDD Experimental Results
-To reproduce the experimental results for Google TensorNetwork, in the project root folder, run
+To reproduce the experimental results for [Google TensorNetwork](https://github.com/google/TensorNetwork), in the project root folder, run
 ```sh
 make benchGTN
 ```
