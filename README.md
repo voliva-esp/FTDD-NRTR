@@ -60,7 +60,7 @@ To verify FTDD correctness, in the project root folder, run
 ```sh
 make verify
 ```
-This will simulate all the circuits in `/Benchmarks/Verification` using IBM Qiskit AER, [PyTDD](https://github.com/Veriqc/TDD), and FTDD, and compare their fidelities. Check the log file `/TestFTDD/log/VerifyFTDD.log` for results. <br>
+This will simulate all the circuits in `/Benchmarks/Verification` using [IBM Qiskit Aer](https://github.com/Qiskit/qiskit-aer), [PyTDD](https://github.com/Veriqc/TDD), and FTDD, and compare their fidelities. Check the log file `/TestFTDD/log/VerifyFTDD.log` for results. <br>
 <br>
 
 ## Reproducing FTDD Experimental Results
