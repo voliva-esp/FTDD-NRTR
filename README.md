@@ -52,11 +52,12 @@ For a demo of FTDD run
 make demo CIR=inst_4x4_10_8
 ```
 This will simulate a 16-qubit depth-10 Google random quantum circuit instance using both PyTDD and FTDD, and compare their performance.
+To run your own circuit, put the `QASM` file in `/Benchmarks/Verification`, and replace `CIR` in the above command with the circuit instance name.
 <br>
 
-## 3. Re-producing FTDD Experimental Results (Coming Soon)
+## Re-producing FTDD Experimental Results
 
-## 4. Citation
+## Citation
 
 If you find FTDD useful in your research, we kindly request to cite our paper:
  - Qirui Zhang, Mehdi Saligane, Hun-Seok Kim, David Blaauw, Georgios Tzimpragos and Dennis Sylvester, "[Quantum Circuit Simulation with Fast Tensor Decision Diagram](https://ieeexplore.ieee.org/document/10528748)," 2024 25th International Symposium on Quality Electronic Design (ISQED), San Francisco, CA, USA, 2024, pp. 1-8.
