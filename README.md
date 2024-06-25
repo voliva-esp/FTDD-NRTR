@@ -68,28 +68,28 @@ To reproduce the experimental results for [Google TensorNetwork](https://github.
 ```sh
 make benchGTN
 ```
-The results are stored in `/BenchFTDD/log/GTN`. <br>
+The logs are stored in `/BenchFTDD/log/GTN`. Experimental results are stored as `csv` files in `/BenchFTDD/data/GTN`. <br>
 <br>
 
 To reproduce the experimental results for [QMDD](https://github.com/cda-tum/mqt-ddsim), in the project root folder, run
 ```sh
 make benchQMDD
 ```
-The results are stored in `/BenchQMDD/log`. <br>
+The logs are stored in `/BenchQMDD/log`. Experimental results are stored as `csv` files in `/BenchQMDD/data`. <br>
 <br>
 
 To reproduce the experimental results for [PyTDD](https://github.com/Veriqc/TDD), in the project root folder, run
 ```sh
 make benchPyTDD
 ```
-The results are stored in `/BenchFTDD/log/PyTDD`. <br>
+The logs are stored in `/BenchFTDD/log/PyTDD`. Experimental results are stored as `csv` files in `/BenchFTDD/data/PyTDD`. <br>
 <br>
 
 To reproduce the experimental results for FTDD, in the project root folder, run
 ```sh
 make benchFTDD
 ```
-The results are stored in `/BenchFTDD/log/FTDD`. <br>
+The logs are stored in `/BenchFTDD/log/FTDD`. Experimental results are stored as `csv` files in `/BenchFTDD/data/FTDD`. <br>
 <br>
 
 ## Citation
