@@ -1,11 +1,16 @@
-cotengra
+autoray
+cotengrust
+cytoolz
 fsspec
 graphviz
 ipython
 kahypar
+loky
 matplotlib
 mqt.bench==0.2.2
 mqt.ddsim==1.17.2
+networkx
+opt_einsum
 optuna
 pylatexenc
 qiskit==0.39.5
@@ -20,4 +25,5 @@ qiskit-machine-learning==0.6.1
 qiskit-nature==0.5.2
 qiskit-optimization==0.5.0
 qiskit-terra==0.22.4
-tensornetwork==0.4.6
+tensornetwork
+tqdm
