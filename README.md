@@ -1,6 +1,6 @@
 # Fast Tensor Decision Diagram
 
-This project is actively being documented. Please check back later for detailed information on dependency, usage, and other important details.
+Quantum Circuit Simulation with Fast Tensor Decision Diagram
 
 ## Prerequisites
 
