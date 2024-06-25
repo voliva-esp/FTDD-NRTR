@@ -8,7 +8,7 @@ Ensure you have the following installed:
 - Anaconda
 - GCC version >= 9.1
 - CMake version >= 3.10
- <br>
+<br>
 
 Create and activate a conda virtual environment with Python 3.8.15:
 ```sh
