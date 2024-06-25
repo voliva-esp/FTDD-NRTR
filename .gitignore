@@ -3,3 +3,14 @@
 /BenchFTDD/TestCases/__pycache__/
 /BenchQMDD/TestCases/__pycache__/
 /source/cpp/build/
+/BenchFTDD/cotengra_cache/*
+/BenchFTDD/data/FTDD/*.csv
+/BenchFTDD/data/GTN/*.csv
+/BenchFTDD/data/PyTDD/*.csv
+/BenchFTDD/log/FTDD/*.log
+/BenchFTDD/log/GTN/*.log
+/BenchFTDD/log/PyTDD/*.log
+/BenchQMDD/data/*.csv
+/BenchQMDD/log/*.log
+/TestFTDD/log/*.log
+/TestFTDD/cotengra_cache/*
