@@ -64,6 +64,19 @@ This will simulate all the circuits in `/Benchmarks/Verification` using [IBM Qis
 <br>
 
 ## Reproducing FTDD Experimental Results
+To reproduce the experimental results for Google TensorNetwork, in the project root folder, run
+```sh
+make benchGTN
+```
+The results are stored in `/BenchFTDD/log/GTN`. <br>
+<br>
+
+To reproduce the experimental results for [QMDD](https://github.com/cda-tum/mqt-ddsim), in the project root folder, run
+```sh
+make benchQMDD
+```
+The results are stored in `/BenchQMDD/log`. <br>
+<br>
 
 ## Citation
 
