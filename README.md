@@ -4,7 +4,7 @@ This project is actively being documented. Please check back later for detailed 
 
 ## Prerequisites
 
-Ensure you have the following installed:
+Ensure you have the following:
 - Linux (e.g., Ubuntu 20.04 LTS or RHEL 8)
 - Anaconda
 - GCC version >= 9.1
@@ -46,6 +46,13 @@ make
 <br>
 
 ## Running the Project
+
+For a demo of FTDD run
+```sh
+make demo CIR=inst_4x4_10_8
+```
+This will simulate a 16-qubit depth-10 Google random quantum circuit instance using both PyTDD and FTDD, and compare their performance.
+<br>
 
 ## 3. Re-producing FTDD Experimental Results (Coming Soon)
 
