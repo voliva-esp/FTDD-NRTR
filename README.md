@@ -78,6 +78,20 @@ make benchQMDD
 The results are stored in `/BenchQMDD/log`. <br>
 <br>
 
+To reproduce the experimental results for [PyTDD](https://github.com/Veriqc/TDD), in the project root folder, run
+```sh
+make benchPyTDD
+```
+The results are stored in `/BenchFTDD/log/PyTDD`. <br>
+<br>
+
+To reproduce the experimental results for FTDD, in the project root folder, run
+```sh
+make benchFTDD
+```
+The results are stored in `/BenchFTDD/log/FTDD`. <br>
+<br>
+
 ## Citation
 
 If you find FTDD useful in your research, we kindly request to cite our paper:
