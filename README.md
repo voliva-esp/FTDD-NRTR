@@ -21,7 +21,6 @@ conda activate myenv
 Install Python dependencies:
 ```sh
 pip install -r requirements.txt
-pip install -U git+https://github.com/jcmgray/cotengra.git
 conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 <br>
