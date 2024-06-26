@@ -1,18 +1,20 @@
 autoray
+cotengra @ git+https://github.com/jcmgray/cotengra.git@0db6abdd3af76cfa9b8d505ef5f6f1ed60a2c1ac
 cotengrust
 cytoolz
+dask
 fsspec
 graphviz
 ipython
-kahypar
-loky
-matplotlib
+kahypar==1.1.8
+loky==3.3.0
+matplotlib==3.6.2
 mqt.bench==0.2.2
 mqt.ddsim==1.17.2
-networkx
-opt_einsum
+networkx==2.8.8
+opt-einsum
 optuna
-pylatexenc
+pylatexenc==2.10
 qiskit==0.39.5
 qiskit-aer==0.11.2
 qiskit-dynamics==0.3.2
@@ -25,5 +27,5 @@ qiskit-machine-learning==0.6.1
 qiskit-nature==0.5.2
 qiskit-optimization==0.5.0
 qiskit-terra==0.22.4
-tensornetwork
+tensornetwork==0.4.6
 tqdm
