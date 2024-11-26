@@ -1,7 +1,8 @@
 """
 Original code from TDD (https://github.com/Veriqc/TDD)
 
-Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo
+Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo. Also added some comments to
+make the code more understandable.
 """
 
 import sys
@@ -26,7 +27,11 @@ epi = 0.000001
 
 
 class Index:
-    """The index, here idx is used when there is a hyperedge"""
+    """
+        The index class
+        'key' is the literal of the index that represents
+        'idx' is used when there is a hyperedge
+    """
 
     def __init__(self, key, idx=0):
         self.key = key
@@ -56,17 +61,17 @@ class Node:
     """To define the node of TDD"""
 
     def __init__(self, key, num=2):
-        self.idx = 0
-        self.key = key
-        self.succ_num = num
+        self.idx = 0             # An ID that identifies uniquely each node
+        self.key = key           # Depth of the node. -1 if it is a leaf node.
+        self.succ_num = num      # Number of successors that can have. Always 2 for TDDs
         """
             @romOlivo: int is not a valid value for initializing the weights. Need to be a numpy number.
             Otherwise will result in an error in the to_array function. As a result of that, the test
             test_make_tdd_rank_1_manually will fail.
         """
         # self.out_weight = [1] * num
-        self.out_weight = [np.float64(1.0)] * num
-        self.successor = [None] * num
+        self.out_weight = [np.float64(1.0)] * num  # Weight of the edges
+        self.successor = [None] * num              # Successors. 'None' means that is a multidimensional 0
         self.meas_prob = []
 
     def get_size(self) -> int:
@@ -85,14 +90,28 @@ class Node:
 
 class TDD:
     def __init__(self, node):
-        """TDD"""
+        """ TDD """
         self.weight = 1
 
+        """ Indices of the TDD that need to be of the class Index """
         self.index_set = []
 
+        """ 
+            For converting the literal of the index (str) in ant int, that represents 
+            the level in which the index will be in the TDD. Always have the value -1: -1,
+            as they represent the leaf indices. Example of a TDD with the indices 'x1' and 'x2':
+            self.key_2_index = {-1: -1, 'x1': 0, 'x2': 1 } 
+        """
         self.key_2_index = dict()
+
+        """ For undo the above conversion """
         self.index_2_key = dict()
 
+        """ 
+            Indicates how many successors have each one of the levels. For TDDs, always will be 2.
+            Example of a TDD with the indices 'x1' and 'x2':
+            self.key_width = {0: 2, 1: 2}
+        """
         self.key_width = dict()
 
         if isinstance(node, Node):
@@ -544,17 +563,26 @@ def np_2_tdd(U, order=[], key_width=True):
 
 
 def tdd_2_np(tdd, split_pos=None, key_repeat_num=dict()):
-    if split_pos == None:
+    if split_pos is None:
         split_pos = tdd.node.key
 
+    """ Base case of a leaf node """
     if split_pos == -1:
         return tdd.weight
     else:
+        """ Normal case. Needs to calculate the representation of each successor and combine it """
         the_succs = []
-        for k in range(tdd.key_width[split_pos]):
-            succ = Slicing2(tdd, split_pos, k)
+        for k in range(tdd.key_width[split_pos]):                        # For TDDs this for will always do 2 iters
+            succ = Slicing2(tdd, split_pos, k)                           # Get one of the successors
+            """
+                Notice that, despite being constant for TDDs, need to fulfill a new key_width for each new TDD created.
+                In this case only copy the key_width of the father TDD. But in reality, the key_width of one successor
+                needs to be the same as the father but without the entry of the higher value. Example:
+                father_tdd.key_width = {0: 2, 1: 2, 2: 2}
+                successor_tdd.key_width = {0: 2, 1: 2}
+            """
             succ.key_width = tdd.key_width
-            temp_res = tdd_2_np(succ, split_pos - 1, key_repeat_num)
+            temp_res = tdd_2_np(succ, split_pos - 1, key_repeat_num)     # Calculate the representation of the successor
             the_succs.append(temp_res)
         if not split_pos in key_repeat_num:
             r = 1
@@ -778,7 +806,11 @@ def contract(tdd1, tdd2, key_2_new_key, cont_order, cont_num):
 
 
 def Slicing(tdd, x, c):
-    """Slice a TDD with respect to x=c"""
+    """
+        Slice a TDD with respect to x=c.
+        When slicing, assumes that you want the normalized numbers of the successor you are trying to slice.
+        It is important to notice that this function creates new TDDs but never set the indices of it.
+    """
 
     k = tdd.node.key
 
@@ -790,14 +822,18 @@ def Slicing(tdd, x, c):
 
     if k == x:
         res = TDD(tdd.node.successor[c])
-        res.weight = tdd.node.out_weight[c]
+        res.weight = tdd.node.out_weight[c]               # This line is the difference with Slicing2
         return res
     else:
         print("Not supported yet!!!")
 
 
 def Slicing2(tdd, x, c):
-    """Slice a TDD with respect to x=c"""
+    """
+        Slice a TDD with respect to x=c
+        When slicing, assumes that you want the real numbers of the successor you are trying to slice.
+        It is important to notice that this function creates new TDDs but never set the indices of it.
+    """
 
     k = tdd.node.key
 
@@ -809,7 +845,7 @@ def Slicing2(tdd, x, c):
 
     if k == x:
         res = TDD(tdd.node.successor[c])
-        res.weight = tdd.node.out_weight[c] * tdd.weight
+        res.weight = tdd.node.out_weight[c] * tdd.weight   # This line is the difference with Slicing
         return res
     else:
         print("Not supported yet!!!")
