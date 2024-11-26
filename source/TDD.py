@@ -822,7 +822,7 @@ def Slicing(tdd, x, c):
 
     if k == x:
         res = TDD(tdd.node.successor[c])
-        res.weight = tdd.node.out_weight[c]               # This line is the difference with Slicing2
+        res.weight = tdd.node.out_weight[c]               # This line is the difference with 'Slicing2'
         return res
     else:
         print("Not supported yet!!!")
@@ -845,27 +845,49 @@ def Slicing2(tdd, x, c):
 
     if k == x:
         res = TDD(tdd.node.successor[c])
-        res.weight = tdd.node.out_weight[c] * tdd.weight   # This line is the difference with Slicing
+        res.weight = tdd.node.out_weight[c] * tdd.weight   # This line is the difference with 'Slicing'
         return res
     else:
         print("Not supported yet!!!")
 
 
+def copy_parameters(tdd_copy, tdd_original):
+    """
+        @romOlivo: New function. Designed to copy all the parameters that are related to the indices from tdd_original
+        into tdd_copy. Needed for fixing the 'add' function.
+    """
+    tdd_copy.index_2_key = tdd_original.index_2_key
+    tdd_copy.key_2_index = tdd_original.key_2_index
+    tdd_copy.index_set = tdd_original.index_set
+    tdd_copy.key_width = tdd_original.key_width
+
+
 def add(tdd1, tdd2):
-    """The apply function of two TDDs. Mostly, it is used to do addition here."""
+    """ The apply function of two TDDs. Mostly, it is used to do addition here.
+
+        @romOlivo: This function only works properly if you use it inside of the 'cont' function. This is due to the
+        fact that 'cont' is the only function that puts the correct indices to the result TDD, but add dos not put
+        it on their own, so if you try to use it to add 2 TDDs and print their results, will fail (see the tests
+        in the file Test/testAddTdd.py). As it seems to work without indices for the main purpose of the method,
+        we will only put the indices if one of the TDDs have it.
+    """
     global global_index_order
 
     k1 = tdd1.node.key
     k2 = tdd2.node.key
 
+    """ Base case when the first TDD represents a multidimensional 0 """
     if tdd1.weight == 0:
         return tdd2.self_copy()
 
+    """ Base case when the second TDD represents a multidimensional 0 """
     if tdd2.weight == 0:
         return tdd1.self_copy()
 
+    """ Base case when both TDDs represents equivalent diagrams """
     if tdd1.node == tdd2.node:
         weig = tdd1.weight + tdd2.weight
+        """ If the resulting TDD represent multidimensional 0 """
         if get_int_key(weig) == (0, 0):
             term = Find_Or_Add_Unique_table(-1)
             res = TDD(term)
@@ -874,12 +896,16 @@ def add(tdd1, tdd2):
         else:
             res = TDD(tdd1.node)
             res.weight = weig
+            """ @romOlivo: Needed for copying the indices in this base case. """
+            copy_parameters(res, tdd1)
             return res
 
+    """ If the operation have been done before, recover it and return it """
     tdd = find_computed_table(['+', tdd1, tdd2])
     if tdd:
         return tdd
 
+    """ Calculate the sum of the TDDs recursively """
     the_successors = []
     if k1 > k2:
         x = k1
@@ -899,4 +925,13 @@ def add(tdd1, tdd2):
 
     res = normalize(x, the_successors)
     insert_2_computed_table(['+', tdd1, tdd2], res)
+
+    """ @romOlivo: Needed for copying the indices in the normal case. """
+    if len(tdd1.index_2_key.keys()) > 0:
+        # If tdd1 have indices, copy all the indices
+        copy_parameters(res, tdd1)
+    else:
+        # If not, copy the indices of tdd2. Could be empty.
+        copy_parameters(res, tdd2)
+
     return res
