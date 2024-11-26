@@ -1,5 +1,7 @@
 """
-Original code from TDD (https://github.com/Veriqc/TDD), not modified
+Original code from TDD (https://github.com/Veriqc/TDD)
+
+Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo
 """
 
 import sys
@@ -36,7 +38,7 @@ class Index:
         else:
             return False
 
-    ''' Operator overloading for '<' of Index. Used for the 'sort' in get_index_2_key() '''
+    """ Operator overloading for '<' of Index. Used for the 'sort' in get_index_2_key() """
 
     def __lt__(self, other):
         if global_index_order[self.key] < global_index_order[other.key]:
@@ -57,7 +59,13 @@ class Node:
         self.idx = 0
         self.key = key
         self.succ_num = num
-        self.out_weight = [1] * num
+        """
+            @romOlivo: int is not a valid value for initializing the weights. Need to be a numpy number.
+            Otherwise will result in an error in the to_array function. As a result of that, the test
+            test_make_tdd_rank_1_manually will fail.
+        """
+        # self.out_weight = [1] * num
+        self.out_weight = [np.float64(1.0)] * num
         self.successor = [None] * num
         self.meas_prob = []
 
