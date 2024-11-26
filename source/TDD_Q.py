@@ -1,122 +1,128 @@
-'''
+"""
 Original code from TDD (https://github.com/Veriqc/TDD)
 
 Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/QiruiZhang/FTDD)
     - Fixed a bug in the original cir_2_tn() function. See line #125
     - Line #232 and beyond
-'''
+"""
 
 import numpy as np
-from source.TN import Index,Tensor,TensorNetwork, HyperEdgeReduced, contTensor
+from source.TN import Index, Tensor, TensorNetwork, HyperEdgeReduced, contTensor
 from qiskit.quantum_info.operators import Operator
 from qiskit.converters import circuit_to_dag, dag_to_circuit
+
 
 def is_diagonal(U):
     i, j = np.nonzero(U)
     return np.all(i == j)
 
-def add_hyper_index(var_list,hyper_index):
+
+def add_hyper_index(var_list, hyper_index):
     for var in var_list:
         if not var in hyper_index:
-            hyper_index[var]=0
+            hyper_index[var] = 0
+
 
 def reshape(U):
-    if U.shape==(1,1):
+    if U.shape == (1, 1):
         return U
-    
-    if U.shape[0]==U.shape[1]:
-        split_U=np.split(U,2,1)
+
+    if U.shape[0] == U.shape[1]:
+        split_U = np.split(U, 2, 1)
     else:
-        split_U=np.split(U,2,0)
-    split_U[0]=reshape(split_U[0])
-    split_U[1]=reshape(split_U[1]) 
+        split_U = np.split(U, 2, 0)
+    split_U[0] = reshape(split_U[0])
+    split_U[1] = reshape(split_U[1])
     return np.array([split_U])[0]
+
 
 def get_real_qubit_num(cir):
     """Calculate the real number of qubits of a circuit"""
-    gates=cir.data
-    q=0
+    gates = cir.data
+    q = 0
     for k in range(len(gates)):
-        q=max(q,max([qbit.index for qbit in gates[k][1]]))
-    return q+1
+        q = max(q, max([qbit.index for qbit in gates[k][1]]))
+    return q + 1
 
-def cir_2_tn(cir,input_s=[],output_s=[]):
+
+def cir_2_tn(cir, input_s=[], output_s=[]):
     """return the dict that link every quantum gate to the corresponding index"""
-    
-    hyper_index=dict() 
+
+    hyper_index = dict()
     qubits_index = dict()
-    start_tensors= dict()
+    start_tensors = dict()
     end_tensors = dict()
-    
-    qubits_num=get_real_qubit_num(cir)
+
+    qubits_num = get_real_qubit_num(cir)
     for k in range(qubits_num):
-        qubits_index[k]=0
-        
-    tn=TensorNetwork([],tn_type='cir',qubits_num=qubits_num)
-        
+        qubits_index[k] = 0
+
+    tn = TensorNetwork([], tn_type='cir', qubits_num=qubits_num)
+
     if input_s:
-        U0=np.array([1,0])
-        U1=np.array([0,1])
+        U0 = np.array([1, 0])
+        U1 = np.array([0, 1])
         for k in range(qubits_num):
-            if input_s[k]==0:
-                ts=Tensor(U0,[Index('x'+str(k))],'in',[k])
-            elif input_s[k]==1:
-                ts=Tensor(U1,[Index('x'+str(k))],'in',[k])
+            if input_s[k] == 0:
+                ts = Tensor(U0, [Index('x' + str(k))], 'in', [k])
+            elif input_s[k] == 1:
+                ts = Tensor(U1, [Index('x' + str(k))], 'in', [k])
             else:
                 print('Only support computational basis input')
             tn.tensors.append(ts)
 
-    gates=cir.data
+    gates = cir.data
     for k in range(len(gates)):
-        g=gates[k]
-        nam=g[0].name
+        g = gates[k]
+        nam = g[0].name
         q = [q.index for q in g[1]]
 
-        var=[]
-        ts=Tensor([],[],nam,q)
-        U=Operator(g[0]).data
+        var = []
+        ts = Tensor([], [], nam, q)
+        U = Operator(g[0]).data
 
-        if nam=='cx':
-            U=np.array([[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]])
-            U=reshape(U)
-            ts.data=U
+        if nam == 'cx':
+            U = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]])
+            U = reshape(U)
+            ts.data = U
 
-            var_con='x'+ str(q[0])+'_'+str(qubits_index[q[0]])
-            var_tar_in='x'+ str(q[1])+'_'+str(qubits_index[q[1]])
-            var_tar_out='x'+ str(q[1])+'_'+str(qubits_index[q[1]]+1)
-            add_hyper_index([var_con,var_tar_in,var_tar_out],hyper_index)
-            var+=[Index(var_con,hyper_index[var_con]),Index(var_con,hyper_index[var_con]+1),Index(var_tar_in,hyper_index[var_tar_in]),Index(var_tar_out,hyper_index[var_tar_out])]
-            
-            if qubits_index[q[0]]==0 and hyper_index[var_con]==0:
-                start_tensors[q[0]]=ts
-            if qubits_index[q[1]]==0 and hyper_index[var_tar_in]==0:
-                start_tensors[q[1]]=ts
-            end_tensors[q[0]]=ts
-            end_tensors[q[1]]=ts
-            hyper_index[var_con]+=1
-            qubits_index[q[1]]+=1   
+            var_con = 'x' + str(q[0]) + '_' + str(qubits_index[q[0]])
+            var_tar_in = 'x' + str(q[1]) + '_' + str(qubits_index[q[1]])
+            var_tar_out = 'x' + str(q[1]) + '_' + str(qubits_index[q[1]] + 1)
+            add_hyper_index([var_con, var_tar_in, var_tar_out], hyper_index)
+            var += [Index(var_con, hyper_index[var_con]), Index(var_con, hyper_index[var_con] + 1),
+                    Index(var_tar_in, hyper_index[var_tar_in]), Index(var_tar_out, hyper_index[var_tar_out])]
 
-            ts.index_set=var
+            if qubits_index[q[0]] == 0 and hyper_index[var_con] == 0:
+                start_tensors[q[0]] = ts
+            if qubits_index[q[1]] == 0 and hyper_index[var_tar_in] == 0:
+                start_tensors[q[1]] = ts
+            end_tensors[q[0]] = ts
+            end_tensors[q[1]] = ts
+            hyper_index[var_con] += 1
+            qubits_index[q[1]] += 1
+
+            ts.index_set = var
             tn.tensors.append(ts)
         elif is_diagonal(U):
-            if len(q)>1:
-                U=reshape(U)
-            ts.data=U
-            
-            for k in q:
-                var_in='x'+ str(k)+'_'+str(qubits_index[k])
-                add_hyper_index([var_in],hyper_index)
-                var+=[Index(var_in,hyper_index[var_in]),Index(var_in,hyper_index[var_in]+1)]
+            if len(q) > 1:
+                U = reshape(U)
+            ts.data = U
 
-                if qubits_index[k]==0 and hyper_index[var_in]==0:
-                    start_tensors[k]=ts
-                end_tensors[k]=ts             
-                hyper_index[var_in]+=1
-            
-            ts.index_set=var
+            for k in q:
+                var_in = 'x' + str(k) + '_' + str(qubits_index[k])
+                add_hyper_index([var_in], hyper_index)
+                var += [Index(var_in, hyper_index[var_in]), Index(var_in, hyper_index[var_in] + 1)]
+
+                if qubits_index[k] == 0 and hyper_index[var_in] == 0:
+                    start_tensors[k] = ts
+                end_tensors[k] = ts
+                hyper_index[var_in] += 1
+
+            ts.index_set = var
             tn.tensors.append(ts)
         else:
-            ''' 
+            """
             The original code here has a bug:
                 QASM and QISKIT data comes as matrices with rows being output indices and columns being input indices
                 For >= 2-qubit gates, reshape() recognizes that and will convert the matrix to be a tensor in the index order of
@@ -129,262 +135,274 @@ def cir_2_tn(cir,input_s=[],output_s=[]):
             if len(q)>1:
                 U=reshape(U)
             ts.data=U
-            '''
+            """
             # Above Bug Fixed:
-            U=reshape(U)
+            U = reshape(U)
             if len(q) == 1:
-                U = U[:,:,0,0]
-            ts.data=U
+                U = U[:, :, 0, 0]
+            ts.data = U
 
             for k in q:
-                var_in='x'+ str(k)+'_'+str(qubits_index[k])
-                var_out='x'+ str(k)+'_'+str(qubits_index[k]+1)
-                add_hyper_index([var_in,var_out],hyper_index)
-                var+=[Index(var_in,hyper_index[var_in]),Index(var_out,hyper_index[var_out])]
+                var_in = 'x' + str(k) + '_' + str(qubits_index[k])
+                var_out = 'x' + str(k) + '_' + str(qubits_index[k] + 1)
+                add_hyper_index([var_in, var_out], hyper_index)
+                var += [Index(var_in, hyper_index[var_in]), Index(var_out, hyper_index[var_out])]
 
-                if qubits_index[k]==0 and hyper_index[var_in]==0:
-                    start_tensors[k]=ts
-                end_tensors[k]=ts                
-                qubits_index[k]+=1
+                if qubits_index[k] == 0 and hyper_index[var_in] == 0:
+                    start_tensors[k] = ts
+                end_tensors[k] = ts
+                qubits_index[k] += 1
 
-            ts.index_set=var
-            tn.tensors.append(ts)          
+            ts.index_set = var
+            tn.tensors.append(ts)
 
     for k in range(qubits_num):
         if k in start_tensors:
-            last1=Index('x'+str(k)+'_'+str(0),0)
-            new1=Index('x'+str(k),0)            
-            start_tensors[k].index_set[start_tensors[k].index_set.index(last1)]=new1
-        
+            last1 = Index('x' + str(k) + '_' + str(0), 0)
+            new1 = Index('x' + str(k), 0)
+            start_tensors[k].index_set[start_tensors[k].index_set.index(last1)] = new1
+
         if k in end_tensors:
-            last2=Index('x'+str(k)+'_'+str(qubits_index[k]),hyper_index['x'+str(k)+'_'+str(qubits_index[k])])
-            new2=Index('y'+str(k),0)            
-            end_tensors[k].index_set[end_tensors[k].index_set.index(last2)]=new2
+            last2 = Index('x' + str(k) + '_' + str(qubits_index[k]),
+                          hyper_index['x' + str(k) + '_' + str(qubits_index[k])])
+            new2 = Index('y' + str(k), 0)
+            end_tensors[k].index_set[end_tensors[k].index_set.index(last2)] = new2
 
     for k in range(qubits_num):
-        U=np.eye(2)
-        if qubits_index[k]==0 and not 'x'+str(k)+'_'+str(0) in hyper_index:
-            var_in='x'+str(k)
-            var=[Index('x'+str(k),0),Index('y'+str(k),0)]
-            ts=Tensor(U,var,'nu_q',[k])
+        U = np.eye(2)
+        if qubits_index[k] == 0 and not 'x' + str(k) + '_' + str(0) in hyper_index:
+            var_in = 'x' + str(k)
+            var = [Index('x' + str(k), 0), Index('y' + str(k), 0)]
+            ts = Tensor(U, var, 'nu_q', [k])
             tn.tensors.append(ts)
 
     if output_s:
-        U0=np.array([1,0])
-        U1=np.array([0,1])
+        U0 = np.array([1, 0])
+        U1 = np.array([0, 1])
         for k in range(qubits_num):
-            if input_s[k]==0:
-                ts=Tensor(U0,[Index('y'+str(k))],'out',[k])
-            elif input_s[k]==1:
-                ts=Tensor(U1,[Index('y'+str(k))],'out',[k])
+            if input_s[k] == 0:
+                ts = Tensor(U0, [Index('y' + str(k))], 'out', [k])
+            elif input_s[k] == 1:
+                ts = Tensor(U1, [Index('y' + str(k))], 'out', [k])
             else:
                 print('Only support computational basis output')
             tn.tensors.append(ts)
-    
-    all_indexs=[]
-    for k in range(qubits_num):
-        all_indexs.append('x'+str(k))
-        for k1 in range(qubits_index[k]+1): 
-            all_indexs.append('x'+str(k)+'_'+str(k1))
-        all_indexs.append('y'+str(k))
-    
-    return tn,all_indexs
 
-def add_inputs(tn,input_s,qubits_num):
-    U0=np.array([1,0])
-    U1=np.array([0,1])
-    if len(input_s)!= qubits_num:
+    all_indexs = []
+    for k in range(qubits_num):
+        all_indexs.append('x' + str(k))
+        for k1 in range(qubits_index[k] + 1):
+            all_indexs.append('x' + str(k) + '_' + str(k1))
+        all_indexs.append('y' + str(k))
+
+    return tn, all_indexs
+
+
+def add_inputs(tn, input_s, qubits_num):
+    U0 = np.array([1, 0])
+    U1 = np.array([0, 1])
+    if len(input_s) != qubits_num:
         print("inputs is not match qubits number")
-        return 
-    for k in range(qubits_num-1,-1,-1):
-        if input_s[k]==0:
-            ts=Tensor(U0,[Index('x'+str(k))],'in',[k], 0)
-        elif input_s[k]==1:
-            ts=Tensor(U1,[Index('x'+str(k))],'in',[k], 0)
+        return
+    for k in range(qubits_num - 1, -1, -1):
+        if input_s[k] == 0:
+            ts = Tensor(U0, [Index('x' + str(k))], 'in', [k], 0)
+        elif input_s[k] == 1:
+            ts = Tensor(U1, [Index('x' + str(k))], 'in', [k], 0)
         else:
             print('Only support computational basis input')
-        tn.tensors.insert(0,ts)
-            
-def add_outputs(tn,output_s,qubits_num, depth=0):
-    U0=np.array([1,0])
-    U1=np.array([0,1])
-    if len(output_s)!= qubits_num:
+        tn.tensors.insert(0, ts)
+
+
+def add_outputs(tn, output_s, qubits_num, depth=0):
+    U0 = np.array([1, 0])
+    U1 = np.array([0, 1])
+    if len(output_s) != qubits_num:
         print("outputs is not match qubits number")
-        return 
+        return
     for k in range(qubits_num):
-        if output_s[k]==0:
-            ts=Tensor(U0,[Index('y'+str(k))],'out',[k], depth+1)
-        elif output_s[k]==1:
-            ts=Tensor(U1,[Index('y'+str(k))],'out',[k], depth+1)
+        if output_s[k] == 0:
+            ts = Tensor(U0, [Index('y' + str(k))], 'out', [k], depth + 1)
+        elif output_s[k] == 1:
+            ts = Tensor(U1, [Index('y' + str(k))], 'out', [k], depth + 1)
         else:
             print('Only support computational basis output')
-        tn.tensors.append(ts)       
-
-def add_trace_line(tn,qubits_num):
-    U=np.eye(2)
-    for k in range(qubits_num-1,-1,-1):
-        var_in='x'+str(k)
-        var=[Index('x'+str(k),0),Index('y'+str(k),0)]
-        ts=Tensor(U,var,'tr',[k])
-        tn.tensors.insert(0,ts)
+        tn.tensors.append(ts)
 
 
-''' 
+def add_trace_line(tn, qubits_num):
+    U = np.eye(2)
+    for k in range(qubits_num - 1, -1, -1):
+        var_in = 'x' + str(k)
+        var = [Index('x' + str(k), 0), Index('y' + str(k), 0)]
+        ts = Tensor(U, var, 'tr', [k])
+        tn.tensors.insert(0, ts)
+
+
+"""  
     Below are functions added by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/QiruiZhang/FTDD) 
-'''
+""" 
 
-def print_gate(g): 
-    nam=g[0].name
+
+def print_gate(g):
+    nam = g[0].name
     q = [q.index for q in g[1]]
     print('Gate ' + nam + ' on qubits ' + str(q))
 
-''' Transpile QASM into a TN in the sequential order (qubit by qubit and layer by layer) '''
-def cir_2_tn_lbl(cir,input_s=[],output_s=[]):
-    
-    hyper_index=dict() 
+
+""" Transpile QASM into a TN in the sequential order (qubit by qubit and layer by layer) """
+
+
+def cir_2_tn_lbl(cir, input_s=[], output_s=[]):
+    hyper_index = dict()
     qubits_index = dict()
-    start_tensors= dict()
+    start_tensors = dict()
     end_tensors = dict()
-    
-    ''' Get qubit number and initialize qubits_index '''
-    qubits_num=get_real_qubit_num(cir)
+
+    """ Get qubit number and initialize qubits_index """
+    qubits_num = get_real_qubit_num(cir)
     for k in range(qubits_num):
-        qubits_index[k]=0
-        
-    ''' Create an empty tensor network for the circuit '''
-    tn=TensorNetwork([],tn_type='cir',qubits_num=qubits_num)
-        
+        qubits_index[k] = 0
+
+    """ Create an empty tensor network for the circuit """
+    tn = TensorNetwork([], tn_type='cir', qubits_num=qubits_num)
+
     if input_s:
-        U0=np.array([1,0])
-        U1=np.array([0,1])
+        U0 = np.array([1, 0])
+        U1 = np.array([0, 1])
         for k in range(qubits_num):
-            if input_s[k]==0:
-                ts=Tensor(U0,[Index('x'+str(k))],'in',[k], 0)
-            elif input_s[k]==1:
-                ts=Tensor(U1,[Index('x'+str(k))],'in',[k], 0)
+            if input_s[k] == 0:
+                ts = Tensor(U0, [Index('x' + str(k))], 'in', [k], 0)
+            elif input_s[k] == 1:
+                ts = Tensor(U1, [Index('x' + str(k))], 'in', [k], 0)
             else:
                 print('Only support computational basis input')
             tn.tensors.append(ts)
 
-    ''' Convert circuit to a DAG to be later parsed layer by layer '''
+    """ Convert circuit to a DAG to be later parsed layer by layer """
     dag = circuit_to_dag(cir)
     k_layer = 0
 
-    ''' Add gates to the TN layer by layer '''
+    """ Add gates to the TN layer by layer """
     for layer in dag.layers():
         k_layer += 1
         cir_layer = dag_to_circuit(layer['graph'])
         gates = cir_layer.data
         for k in range(len(gates)):
-            g=gates[k]
-            nam=g[0].name
+            g = gates[k]
+            nam = g[0].name
             q = [q.index for q in g[1]]
 
-            var=[]
-            ts=Tensor([],[],nam,q, k_layer)
-            U=Operator(g[0]).data
+            var = []
+            ts = Tensor([], [], nam, q, k_layer)
+            U = Operator(g[0]).data
 
-            if nam=='cx':
-                U=np.array([[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]])
-                U=reshape(U)
-                ts.data=U
+            if nam == 'cx':
+                U = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]])
+                U = reshape(U)
+                ts.data = U
 
-                var_con='x'+ str(q[0])+'_'+str(qubits_index[q[0]])
-                var_tar_in='x'+ str(q[1])+'_'+str(qubits_index[q[1]])
-                var_tar_out='x'+ str(q[1])+'_'+str(qubits_index[q[1]]+1)
-                add_hyper_index([var_con,var_tar_in,var_tar_out],hyper_index)
-                var+=[Index(var_con,hyper_index[var_con]),Index(var_con,hyper_index[var_con]+1),Index(var_tar_in,hyper_index[var_tar_in]),Index(var_tar_out,hyper_index[var_tar_out])]
-                
-                if qubits_index[q[0]]==0 and hyper_index[var_con]==0:
-                    start_tensors[q[0]]=ts
-                if qubits_index[q[1]]==0 and hyper_index[var_tar_in]==0:
-                    start_tensors[q[1]]=ts
-                end_tensors[q[0]]=ts
-                end_tensors[q[1]]=ts
-                hyper_index[var_con]+=1
-                qubits_index[q[1]]+=1   
+                var_con = 'x' + str(q[0]) + '_' + str(qubits_index[q[0]])
+                var_tar_in = 'x' + str(q[1]) + '_' + str(qubits_index[q[1]])
+                var_tar_out = 'x' + str(q[1]) + '_' + str(qubits_index[q[1]] + 1)
+                add_hyper_index([var_con, var_tar_in, var_tar_out], hyper_index)
+                var += [Index(var_con, hyper_index[var_con]), Index(var_con, hyper_index[var_con] + 1),
+                        Index(var_tar_in, hyper_index[var_tar_in]), Index(var_tar_out, hyper_index[var_tar_out])]
 
-                ts.index_set=var
+                if qubits_index[q[0]] == 0 and hyper_index[var_con] == 0:
+                    start_tensors[q[0]] = ts
+                if qubits_index[q[1]] == 0 and hyper_index[var_tar_in] == 0:
+                    start_tensors[q[1]] = ts
+                end_tensors[q[0]] = ts
+                end_tensors[q[1]] = ts
+                hyper_index[var_con] += 1
+                qubits_index[q[1]] += 1
+
+                ts.index_set = var
                 tn.tensors.append(ts)
             elif is_diagonal(U):
-                if len(q)>1:
-                    U=reshape(U)
-                ts.data=U
-                
-                for k in q:
-                    var_in='x'+ str(k)+'_'+str(qubits_index[k])
-                    add_hyper_index([var_in],hyper_index)
-                    var+=[Index(var_in,hyper_index[var_in]),Index(var_in,hyper_index[var_in]+1)]
+                if len(q) > 1:
+                    U = reshape(U)
+                ts.data = U
 
-                    if qubits_index[k]==0 and hyper_index[var_in]==0:
-                        start_tensors[k]=ts
-                    end_tensors[k]=ts             
-                    hyper_index[var_in]+=1
-                
-                ts.index_set=var
+                for k in q:
+                    var_in = 'x' + str(k) + '_' + str(qubits_index[k])
+                    add_hyper_index([var_in], hyper_index)
+                    var += [Index(var_in, hyper_index[var_in]), Index(var_in, hyper_index[var_in] + 1)]
+
+                    if qubits_index[k] == 0 and hyper_index[var_in] == 0:
+                        start_tensors[k] = ts
+                    end_tensors[k] = ts
+                    hyper_index[var_in] += 1
+
+                ts.index_set = var
                 tn.tensors.append(ts)
             else:
                 # See the original cir_2_tn function for a bug (fixed) that used to be here:
-                U=reshape(U)
+                U = reshape(U)
                 if len(q) == 1:
-                    U = U[:,:,0,0]
-                ts.data=U
+                    U = U[:, :, 0, 0]
+                ts.data = U
 
                 for k in q:
-                    var_in='x'+ str(k)+'_'+str(qubits_index[k])
-                    var_out='x'+ str(k)+'_'+str(qubits_index[k]+1)
-                    add_hyper_index([var_in,var_out],hyper_index)
-                    var+=[Index(var_in,hyper_index[var_in]),Index(var_out,hyper_index[var_out])]
+                    var_in = 'x' + str(k) + '_' + str(qubits_index[k])
+                    var_out = 'x' + str(k) + '_' + str(qubits_index[k] + 1)
+                    add_hyper_index([var_in, var_out], hyper_index)
+                    var += [Index(var_in, hyper_index[var_in]), Index(var_out, hyper_index[var_out])]
 
-                    if qubits_index[k]==0 and hyper_index[var_in]==0:
-                        start_tensors[k]=ts
-                    end_tensors[k]=ts                
-                    qubits_index[k]+=1
+                    if qubits_index[k] == 0 and hyper_index[var_in] == 0:
+                        start_tensors[k] = ts
+                    end_tensors[k] = ts
+                    qubits_index[k] += 1
 
-                ts.index_set=var
-                tn.tensors.append(ts)         
+                ts.index_set = var
+                tn.tensors.append(ts)
 
     for k in range(qubits_num):
         if k in start_tensors:
-            last1=Index('x'+str(k)+'_'+str(0),0)
-            new1=Index('x'+str(k),0)            
-            start_tensors[k].index_set[start_tensors[k].index_set.index(last1)]=new1
-        
+            last1 = Index('x' + str(k) + '_' + str(0), 0)
+            new1 = Index('x' + str(k), 0)
+            start_tensors[k].index_set[start_tensors[k].index_set.index(last1)] = new1
+
         if k in end_tensors:
-            last2=Index('x'+str(k)+'_'+str(qubits_index[k]),hyper_index['x'+str(k)+'_'+str(qubits_index[k])])
-            new2=Index('y'+str(k),0)            
-            end_tensors[k].index_set[end_tensors[k].index_set.index(last2)]=new2
+            last2 = Index('x' + str(k) + '_' + str(qubits_index[k]),
+                          hyper_index['x' + str(k) + '_' + str(qubits_index[k])])
+            new2 = Index('y' + str(k), 0)
+            end_tensors[k].index_set[end_tensors[k].index_set.index(last2)] = new2
 
     for k in range(qubits_num):
-        U=np.eye(2)
-        if qubits_index[k]==0 and not 'x'+str(k)+'_'+str(0) in hyper_index:
-            var_in='x'+str(k)
-            var=[Index('x'+str(k),0),Index('y'+str(k),0)]
-            ts=Tensor(U,var,'nu_q',[k], 1)
+        U = np.eye(2)
+        if qubits_index[k] == 0 and not 'x' + str(k) + '_' + str(0) in hyper_index:
+            var_in = 'x' + str(k)
+            var = [Index('x' + str(k), 0), Index('y' + str(k), 0)]
+            ts = Tensor(U, var, 'nu_q', [k], 1)
             tn.tensors.append(ts)
 
     if output_s:
-        U0=np.array([1,0])
-        U1=np.array([0,1])
+        U0 = np.array([1, 0])
+        U1 = np.array([0, 1])
         for k in range(qubits_num):
-            if input_s[k]==0:
-                ts=Tensor(U0,[Index('y'+str(k))],'out',[k], k_layer+1)
-            elif input_s[k]==1:
-                ts=Tensor(U1,[Index('y'+str(k))],'out',[k], k_layer+1)
+            if input_s[k] == 0:
+                ts = Tensor(U0, [Index('y' + str(k))], 'out', [k], k_layer + 1)
+            elif input_s[k] == 1:
+                ts = Tensor(U1, [Index('y' + str(k))], 'out', [k], k_layer + 1)
             else:
                 print('Only support computational basis output')
             tn.tensors.append(ts)
-    
-    all_indexs=[]
-    for k in range(qubits_num):
-        all_indexs.append('x'+str(k))
-        for k1 in range(qubits_index[k]+1): 
-            all_indexs.append('x'+str(k)+'_'+str(k1))
-        all_indexs.append('y'+str(k))
-    
-    return tn,all_indexs, k_layer
 
-''' This function converts GRCS circuits in .txt files to QASM files '''
+    all_indexs = []
+    for k in range(qubits_num):
+        all_indexs.append('x' + str(k))
+        for k1 in range(qubits_index[k] + 1):
+            all_indexs.append('x' + str(k) + '_' + str(k1))
+        all_indexs.append('y' + str(k))
+
+    return tn, all_indexs, k_layer
+
+
+""" This function converts GRCS circuits in .txt files to QASM files """
+
+
 def grcs2qasm(grcs_file, qasm_file, bubble=False):
     # Create file I/Os
     file_in = open(grcs_file, 'r')
@@ -404,7 +422,7 @@ def grcs2qasm(grcs_file, qasm_file, bubble=False):
 
     # Write the circuit
     cycle_prev = 0
-    qubits_involved = [0]*int(qubits_num)
+    qubits_involved = [0] * int(qubits_num)
     for k in range(1, len(grcs)):
         line = grcs[k][:-1].split(' ')
 
@@ -418,7 +436,7 @@ def grcs2qasm(grcs_file, qasm_file, bubble=False):
                 if (qubits_involved[q] != 1) and bubble:
                     file_out.write('id q[' + str(q) + '];\n')
             # Reset qubit involvement
-            qubits_involved = [0]*int(qubits_num)
+            qubits_involved = [0] * int(qubits_num)
             file_out.write('\n')
         cycle_prev = cycle_next
 
@@ -428,26 +446,29 @@ def grcs2qasm(grcs_file, qasm_file, bubble=False):
 
         if name_grcs == 'cz':
             name_qasm = 'cz'
-            qubits_qasm = 'q[' + qubits_grcs[0] +'],q[' + qubits_grcs[1] + ']'
+            qubits_qasm = 'q[' + qubits_grcs[0] + '],q[' + qubits_grcs[1] + ']'
         elif name_grcs == 't':
             name_qasm = 't'
-            qubits_qasm = 'q[' + qubits_grcs[0] +']'
+            qubits_qasm = 'q[' + qubits_grcs[0] + ']'
         elif name_grcs == 'h':
             name_qasm = 'h'
-            qubits_qasm = 'q[' + qubits_grcs[0] +']'
+            qubits_qasm = 'q[' + qubits_grcs[0] + ']'
         elif name_grcs == 'x_1_2':
             name_qasm = 'rx(pi*0.5)'
-            qubits_qasm = 'q[' + qubits_grcs[0] +']'
+            qubits_qasm = 'q[' + qubits_grcs[0] + ']'
         elif name_grcs == 'y_1_2':
             name_qasm = 'ry(pi*0.5)'
-            qubits_qasm = 'q[' + qubits_grcs[0] +']'
+            qubits_qasm = 'q[' + qubits_grcs[0] + ']'
         else:
             print("Error: Invalid qrcs gate!")
             return
-        
+
         file_out.write(name_qasm + ' ' + qubits_qasm + ';\n')
 
-''' This function convert TDD tensor network to input format for Cotengra, and considers hyper-edges '''
+
+""" This function convert TDD tensor network to input format for Cotengra, and considers hyper-edges """
+
+
 def TNtoCotInput(tn_lbl, n=0, prnt=False):
     tensor_list = []
     arrays = []
@@ -461,7 +482,7 @@ def TNtoCotInput(tn_lbl, n=0, prnt=False):
         for ind in indices:
             if ind not in size_dict:
                 size_dict[ind] = 2
-        
+
         # Input for Cotengra
         tensor_list.append(indices)
         arrays.append(ts_data)
@@ -469,7 +490,7 @@ def TNtoCotInput(tn_lbl, n=0, prnt=False):
         # Input for opt_einsum
         oe_input.append(ts_data)
         oe_input.append(indices)
-        
+
         # Print
         if prnt:
             print(ts.name)
@@ -478,11 +499,14 @@ def TNtoCotInput(tn_lbl, n=0, prnt=False):
             print('\n')
 
     # Output indices
-    open_indices = tuple(['y'+str(i) for i in range(n-1, -1, -1)])
+    open_indices = tuple(['y' + str(i) for i in range(n - 1, -1, -1)])
 
     return tensor_list, open_indices, size_dict, arrays, oe_input
 
-''' This function convert TDD tensor network to input format for Cotengra, and do not consider hyper-edges '''
+
+""" This function convert TDD tensor network to input format for Cotengra, and do not consider hyper-edges """
+
+
 def TNtoCotInput2(tn_lbl, n=0, prnt=False):
     tensor_list = []
     arrays = []
@@ -491,13 +515,13 @@ def TNtoCotInput2(tn_lbl, n=0, prnt=False):
     for ts in tn_lbl.tensors:
         # Reduce hyper-edges for each tensor
         ts_data = np.squeeze(ts.data)
-        indices = tuple([ind.key + '_' + str(ind.idx) for ind in ts.index_set ])
+        indices = tuple([ind.key + '_' + str(ind.idx) for ind in ts.index_set])
 
         # Size dictionary
         for ind in indices:
             if ind not in size_dict:
                 size_dict[ind] = 2
-        
+
         # Input for Cotengra
         tensor_list.append(indices)
         arrays.append(ts_data)
@@ -505,7 +529,7 @@ def TNtoCotInput2(tn_lbl, n=0, prnt=False):
         # Input for opt_einsum
         oe_input.append(ts_data)
         oe_input.append(indices)
-        
+
         # Print
         if prnt:
             print(ts.name)
@@ -514,25 +538,28 @@ def TNtoCotInput2(tn_lbl, n=0, prnt=False):
             print('\n')
 
     # Output indices
-    open_indices = tuple(['y'+str(i)+'_0' for i in range(n-1, -1, -1)])
+    open_indices = tuple(['y' + str(i) + '_0' for i in range(n - 1, -1, -1)])
 
     return tensor_list, open_indices, size_dict, arrays, oe_input
 
-''' This function performs the Tetris-like TN rank simplification for single-qubit gates '''
+
+""" This function performs the Tetris-like TN rank simplification for single-qubit gates """
+
+
 def squeezeTN(tensors, qubit_num, depth, prnt=False):
-    ''' Initialize the Tetris stack, one for each qubit line '''
+    """ Initialize the Tetris stack, one for each qubit line """
     tetris_stack = [[] for i in range(qubit_num)]
 
-    ''' Now build the Tetris stack, round-1: merge all the single-qubit gates into adjacent two-qubit gates '''
+    """ Now build the Tetris stack, round-1: merge all the single-qubit gates into adjacent two-qubit gates """
     for ts in tensors:
         if prnt:
             print('\n\n')
             ts.printTensor()
 
         # single-qubit gates
-        if (len(ts.qubits) == 1): 
+        if (len(ts.qubits) == 1):
             # stack for the target qubit is not empty
-            if tetris_stack[ts.qubits[0]]: 
+            if tetris_stack[ts.qubits[0]]:
                 # Contract it with the stack top (popped), then push the new tensor back
                 stack_top = tetris_stack[ts.qubits[0]][-1]
                 stack_top_new = contTensor(stack_top, ts)
@@ -541,12 +568,12 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                     tetris_stack[qubit].pop(pos)
                     tetris_stack[qubit].insert(pos, stack_top_new)
             # stack is empty, just push the tensor
-            else: 
+            else:
                 tetris_stack[ts.qubits[0]].append(ts)
         # two-qubit gates
         elif (len(ts.qubits) == 2):
             # stack for neither qubit is empty
-            if tetris_stack[ts.qubits[0]] and tetris_stack[ts.qubits[1]]: 
+            if tetris_stack[ts.qubits[0]] and tetris_stack[ts.qubits[1]]:
                 stack_top_0 = tetris_stack[ts.qubits[0]][-1]
                 stack_top_1 = tetris_stack[ts.qubits[1]][-1]
                 # if both stack_top are single-qubit gates
@@ -570,8 +597,8 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                     for qubit in stack_top_0.qubits:
                         pos = tetris_stack[qubit].index(stack_top_0)
                         tetris_stack[qubit].pop(pos)
-                        tetris_stack[qubit].insert(pos, stack_top_new)    
-                    # Update stack of 2nd qubit
+                        tetris_stack[qubit].insert(pos, stack_top_new)
+                        # Update stack of 2nd qubit
                     tetris_stack[ts.qubits[1]].append(stack_top_new)
                 # if only the 2nd stack_top is single-qubit gate
                 elif (len(stack_top_1.qubits) == 1):
@@ -580,10 +607,10 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                     for qubit in stack_top_1.qubits:
                         pos = tetris_stack[qubit].index(stack_top_1)
                         tetris_stack[qubit].pop(pos)
-                        tetris_stack[qubit].insert(pos, stack_top_new)    
-                    # Update stack of 2nd qubit
-                    tetris_stack[ts.qubits[0]].append(stack_top_new)  
-                # None of the stack_top is single-qubit gate              
+                        tetris_stack[qubit].insert(pos, stack_top_new)
+                        # Update stack of 2nd qubit
+                    tetris_stack[ts.qubits[0]].append(stack_top_new)
+                    # None of the stack_top is single-qubit gate              
                 else:
                     tetris_stack[ts.qubits[0]].append(ts)
                     tetris_stack[ts.qubits[1]].append(ts)
@@ -597,15 +624,15 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                     for qubit in stack_top_0.qubits:
                         pos = tetris_stack[qubit].index(stack_top_0)
                         tetris_stack[qubit].pop(pos)
-                        tetris_stack[qubit].insert(pos, stack_top_new)    
-                    # Update stack of 2nd qubit
-                    tetris_stack[ts.qubits[1]].append(stack_top_new)   
-                # None of the stack_top is single-qubit gate            
+                        tetris_stack[qubit].insert(pos, stack_top_new)
+                        # Update stack of 2nd qubit
+                    tetris_stack[ts.qubits[1]].append(stack_top_new)
+                    # None of the stack_top is single-qubit gate            
                 else:
                     tetris_stack[ts.qubits[0]].append(ts)
-                    tetris_stack[ts.qubits[1]].append(ts) 
-            # stack for 1st qubit is empty
-            elif tetris_stack[ts.qubits[1]]: 
+                    tetris_stack[ts.qubits[1]].append(ts)
+                    # stack for 1st qubit is empty
+            elif tetris_stack[ts.qubits[1]]:
                 stack_top_1 = tetris_stack[ts.qubits[1]][-1]
                 # if the 2nd stack_top is single-qubit gate
                 if (len(stack_top_1.qubits) == 1):
@@ -614,10 +641,10 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                     for qubit in stack_top_1.qubits:
                         pos = tetris_stack[qubit].index(stack_top_1)
                         tetris_stack[qubit].pop(pos)
-                        tetris_stack[qubit].insert(pos, stack_top_new)    
-                    # Update stack of 2nd qubit
-                    tetris_stack[ts.qubits[0]].append(stack_top_new)    
-                # None of the stack_top is single-qubit gate           
+                        tetris_stack[qubit].insert(pos, stack_top_new)
+                        # Update stack of 2nd qubit
+                    tetris_stack[ts.qubits[0]].append(stack_top_new)
+                    # None of the stack_top is single-qubit gate           
                 else:
                     tetris_stack[ts.qubits[0]].append(ts)
                     tetris_stack[ts.qubits[1]].append(ts)
@@ -628,16 +655,16 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
         else:
             print("Multi-qubit (> 2) gates are currently not supported for circuit simplification!")
             return False
-        
+
         if prnt:
             for q in range(qubit_num):
                 print("\nTetris stack for qubit ", q, ":")
                 for tts in tetris_stack[q]:
                     tts.printTensor()
 
-    ''' Now convert the Tetris stack back to a list of tensors, layer by layer '''
+    """ Now convert the Tetris stack back to a list of tensors, layer by layer """
     ts_res = []
-    for layer in range(1, depth+1):
+    for layer in range(1, depth + 1):
         for qubit in range(qubit_num):
             if tetris_stack[qubit]:
                 ts_to_add = tetris_stack[qubit].pop(0)
@@ -646,31 +673,38 @@ def squeezeTN(tensors, qubit_num, depth, prnt=False):
                         ts_res.append(ts_to_add)
                     else:
                         tetris_stack[qubit].insert(0, ts_to_add)
-    
+
     return ts_res
 
-''' Based on output of the above function, this function further performs the Tetris-like TN rank simplification for two-qubit gates '''
+
+""" 
+    Based on output of the above function, 
+    this function further performs the Tetris-like TN rank simplification for two-qubit gates 
+"""
+
+
 def squeezeTN_ultra(tensors, qubit_num, depth, prnt=False):
-    ''' Initialize the Tetris stack, one for each qubit line '''
+    """ Initialize the Tetris stack, one for each qubit line """
     tetris_stack = [[] for i in range(qubit_num)]
 
-    ''' Now build the Tetris stack, round-2: merge all the consecutive two-qubit gates shareing both qubit lines '''
+    """ Now build the Tetris stack, round-2: merge all the consecutive two-qubit gates shareing both qubit lines """
     for ts in tensors:
         if prnt:
             print('\n\n')
             ts.printTensor()
 
         # single-qubit gates. There shouldn't be any, but we just push them.
-        if (len(ts.qubits) == 1): 
+        if (len(ts.qubits) == 1):
             tetris_stack[ts.qubits[0]].append(ts)
         # two-qubit gates
         elif (len(ts.qubits) == 2):
             # stack for neither qubit is empty
-            if tetris_stack[ts.qubits[0]] and tetris_stack[ts.qubits[1]]: 
+            if tetris_stack[ts.qubits[0]] and tetris_stack[ts.qubits[1]]:
                 stack_top_0 = tetris_stack[ts.qubits[0]][-1]
                 stack_top_1 = tetris_stack[ts.qubits[1]][-1]
                 # if both stack_top are the same two-qubit gate
-                if (stack_top_0 == stack_top_1) and (set(stack_top_1.qubits) == set(ts.qubits)) and (set(stack_top_0.qubits) == set(ts.qubits)):
+                if (stack_top_0 == stack_top_1) and (set(stack_top_1.qubits) == set(ts.qubits)) and (
+                        set(stack_top_0.qubits) == set(ts.qubits)):
                     stack_top_new = contTensor(stack_top_1, ts)
                     # Update stack of target qubits
                     for qubit in stack_top_1.qubits:
@@ -688,16 +722,16 @@ def squeezeTN_ultra(tensors, qubit_num, depth, prnt=False):
         else:
             print("Multi-qubit (> 2) gates are currently not supported for circuit simplification!")
             return False
-        
+
         if prnt:
             for q in range(qubit_num):
                 print("\nTetris stack for qubit ", q, ":")
                 for tts in tetris_stack[q]:
-                    tts.printTensor()    
+                    tts.printTensor()
 
-    ''' Now convert the Tetris stack back to a list of tensors, layer by layer '''
+    """ Now convert the Tetris stack back to a list of tensors, layer by layer """
     ts_res = []
-    for layer in range(1, depth+1):
+    for layer in range(1, depth + 1):
         for qubit in range(qubit_num):
             if tetris_stack[qubit]:
                 ts_to_add = tetris_stack[qubit].pop(0)
@@ -706,5 +740,5 @@ def squeezeTN_ultra(tensors, qubit_num, depth, prnt=False):
                         ts_res.append(ts_to_add)
                     else:
                         tetris_stack[qubit].insert(0, ts_to_add)
-    
+
     return ts_res
