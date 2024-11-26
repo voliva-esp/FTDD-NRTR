@@ -5,9 +5,9 @@ import time
 
 # Import Python Utilities
 sys.path.append('./source/')
-from TDD import Ini_TDD, get_count, get_unique_table_num
-from TN import TensorNetwork, tdd_to_tensor
-from TDD_Q import get_real_qubit_num, add_inputs, cir_2_tn_lbl, TNtoCotInput, squeezeTN, squeezeTN_ultra
+from source.TDD import Ini_TDD, get_count, get_unique_table_num
+from source.TN import TensorNetwork, tdd_to_tensor
+from source.TDD_Q import get_real_qubit_num, add_inputs, cir_2_tn_lbl, TNtoCotInput, squeezeTN, squeezeTN_ultra
 from qiskit import QuantumCircuit
 
 # Import Cotengra

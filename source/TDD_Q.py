@@ -7,7 +7,7 @@ Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/Qi
 '''
 
 import numpy as np
-from TN import Index,Tensor,TensorNetwork, HyperEdgeReduced, contTensor
+from source.TN import Index,Tensor,TensorNetwork, HyperEdgeReduced, contTensor
 from qiskit.quantum_info.operators import Operator
 from qiskit.converters import circuit_to_dag, dag_to_circuit
 

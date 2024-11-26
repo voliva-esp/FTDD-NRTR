@@ -7,7 +7,7 @@ Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/Qi
 '''
 
 import numpy as np
-from TDD import Index, get_tdd,get_identity_tdd, cont
+from source.TDD import Index, get_tdd,get_identity_tdd, cont
 
 # import Google TensorNetwork
 import tensornetwork as gtn
