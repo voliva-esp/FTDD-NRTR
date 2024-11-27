@@ -1,11 +1,25 @@
+"""
+
+    This file was created and documented by Vicente Lopez (voliva@uji.es, @romOlivo) for testing purposes.
+
+"""
+
+
 from source.TDD import TDD, Node, Index, Ini_TDD, get_index_2_key, Find_Or_Add_Unique_table
 import numpy as np
 import unittest
 
+# Can change if you want to test the DDs with more successors. Not intended to change.
 NUMBER_OF_SUCCESSORS = 2
 
 
 class TestToArray(unittest.TestCase):
+    """
+        Suite designed to testing the method 'to_array' of the class TDD.
+
+        In the 'auto' tests, we create the TDDs by using the methods given by the library.
+        In the 'manually' tests, we create the TDDs by manually setting all the information they needed.
+    """
 
     def test_identity_tdd(self):
         tdd = Ini_TDD([])

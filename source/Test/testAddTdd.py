@@ -1,11 +1,24 @@
+"""
+
+    This file was created and documented by Vicente Lopez (voliva@uji.es, @romOlivo) for testing purposes.
+
+"""
+
 from source.TDD import TDD, Node, Index, Ini_TDD, get_index_2_key, Find_Or_Add_Unique_table, add, get_identity_tdd
 import numpy as np
 import unittest
 
+# Can change if you want to test the DDs with more successors. Not intended to change.
 NUMBER_OF_SUCCESSORS = 2
 
 
 class TestAddTdd(unittest.TestCase):
+    """
+        Suite designed to testing the method 'add' of the TDD.py file
+
+        In the 'same' tests, we generate only one TDD and add two of them.
+        In the 'different' tests, we generate 2 TDDs and sum them up.
+    """
 
     def test_add_same_identity_tdd(self):
         tdd = Ini_TDD([])
