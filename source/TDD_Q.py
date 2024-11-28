@@ -785,3 +785,83 @@ def apply_full_tetris(tn, depth):
     new_tn.is_input_close = tn.is_input_close
     new_tn.is_output_close = tn.is_output_close
     return new_tn
+
+
+def calculate_path(p_tn, method):
+    """
+        romOlivo: This method is added to encapsulate all the methods that calculates the contraction path of a circuit.
+        Input variables:
+        p_tn ---> Tensor Network you want to calculate the contraction path
+        method -> Str with the method want to calculate the path. Could be 'seq' or 'cot'.
+        Returning:
+        path ---> Contains the calculated contraction path
+    """
+    import cotengra as ctg
+    path = None
+    n = p_tn.qubits_num
+    if method == 'cot':
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
+        opt = ctg.ReusableHyperOptimizer(
+            minimize=f'combo-{56}',
+            max_repeats=512,
+            max_time=7,
+            progbar=True,
+        )
+        tree = opt.search(tensor_list, open_indices, size_dict)
+        path = tree.get_path()
+    else:
+        path = p_tn.get_seq_path()
+    return path
+
+
+def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
+             contraction_method='seq'):
+    """
+        romOlivo: This method was added to simplify the simulation process. It will encapsulate all the process
+        after the circuit is read as a QuantumCircuit until you get the result of all the contraction.
+        Input variables:
+        cir ----------------> Circuit in the form of 'QuantumCircuit' class of qiskit
+        is_input_closed ----> True if you want to close the input
+        is_output_closed ---> True if you want to close the output
+        use_tetris ---------> True if you want to apply Tetris
+        use_slicing --------> True if you want to apply slicing. NOT IMPLEMENTED YET
+        contraction_method -> Name of the contraction method. Can be 'seq' or 'cot'
+        Returning:
+        tdd ----------------> TDD that contains the result of contracting the tensor network
+    """
+    from source.TDD import Ini_TDD
+
+    # Read and prepare the circuit
+    tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
+    n = get_real_qubit_num(cir)
+
+    state = [0] * n
+
+    # Inputs and outputs are here to make the simple contractions using tetris
+    if is_input_closed:
+        add_inputs(tn, state, n)
+
+    if is_output_closed:
+        add_outputs(tn, state, n)
+
+    if use_tetris:
+        tn = apply_full_tetris(tn, depth)
+
+    # Calculate the path
+    path = calculate_path(tn, contraction_method)
+
+    # Initialize PyTDD
+    Ini_TDD(all_indices_lbl)
+
+    # Make the contractions
+    tdd = tn.cont_TN(path, False)
+
+    """
+        This is important because this variable not always is filled correctly. I do not know why but i can fill
+        correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
+        you cannot execute the function 'to_array' of the resulting TDD.
+    """
+    for i in range(len(tdd.key_2_index.keys()) - 1):
+        tdd.key_width[i] = 2
+    return tdd
+
