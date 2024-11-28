@@ -4,6 +4,9 @@ Original code from TDD (https://github.com/Veriqc/TDD)
 Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/QiruiZhang/FTDD)
     - Fixed a bug in the original cir_2_tn() function. See line #125
     - Line #232 and beyond
+
+Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo. Also added some comments to
+make the code more understandable.
 """
 
 import numpy as np
