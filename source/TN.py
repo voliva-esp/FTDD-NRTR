@@ -4,6 +4,9 @@ Original code from TDD (https://github.com/Veriqc/TDD)
 Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/QiruiZhang/FTDD)
     - See comments in the TensorNetwork class for added functions
     - Line #143 and beyond
+
+Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo. Also added some comments to
+make the code more understandable.
 """
 
 import numpy as np
@@ -43,6 +46,13 @@ class TensorNetwork:
         self.tensors = tensors
         self.tn_type = tn_type
         self.qubits_num = qubits_num
+        """ 
+            @romOlivo: The next variables are to define if the input and output indices are open or close. This
+            will important to generate the correct set of indices in the function 'TNtoCotInput' defined in
+            the file 'TDD_Q.py'.
+        """
+        self.is_input_close = False
+        self.is_output_close = False
 
     def cont(self, optimizer=None, prnt=False):
         tdd = get_identity_tdd()
@@ -56,7 +66,6 @@ class TensorNetwork:
         return tdd
 
     """
- 
         Generate the sequential contraction path
         Added by Qirui Zhang (qiruizh@umich.edu) 
     """
@@ -80,7 +89,6 @@ class TensorNetwork:
         return tuple(path)
 
     """
- 
         PyTDD Contraction with a given order
         Added by Qirui Zhang (qiruizh@umich.edu) 
     """
@@ -115,7 +123,6 @@ class TensorNetwork:
         return tdd
 
     """
- 
         Contraction using GTN with a given order
         Added by Qirui Zhang (qiruizh@umich.edu) 
     """
@@ -205,7 +212,7 @@ def contTensor(ts_A, ts_B):
     varOut_A = [var for var in var_A if not var in varCont]
     varOut_B = [var for var in var_B if not var in varCont]
 
-    """Positions of indices to be contracted in A and B index lists. To be used as inputs to np.tensordot() """
+    """ Positions of indices to be contracted in A and B index lists. To be used as inputs to np.tensordot() """
 
     varContPos_A = tuple([var_A.index(var) for var in varCont])  # position of varCont in tensor A index list
     varContPos_B = tuple([var_B.index(var) for var in varCont])  # position of varCont in tensor B index list

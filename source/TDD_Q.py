@@ -212,6 +212,8 @@ def add_inputs(tn, input_s, qubits_num):
         else:
             print('Only support computational basis input')
         tn.tensors.insert(0, ts)
+    """ romOlivo: This part was added to correctly set the indices in the 'TNtoCotInput' function """
+    tn.is_input_close = True
 
 
 def add_outputs(tn, output_s, qubits_num, depth=0):
@@ -228,6 +230,8 @@ def add_outputs(tn, output_s, qubits_num, depth=0):
         else:
             print('Only support computational basis output')
         tn.tensors.append(ts)
+    """ romOlivo: This part was added to correctly set the indices in the 'TNtoCotInput' function """
+    tn.is_output_close = True
 
 
 def add_trace_line(tn, qubits_num):
@@ -466,6 +470,21 @@ def grcs2qasm(grcs_file, qasm_file, bubble=False):
         file_out.write(name_qasm + ' ' + qubits_qasm + ';\n')
 
 
+def generate_open_indices(tn):
+    """
+        romOlivo: This function was added in order to calculate the open indices of a tensor network. Will be
+        used in both 'TNtoCotInput' and 'TNtoCotInput2' to properly calculate the indices.
+    """
+    open_indices = []
+    n = tn.qubits_num
+    if not tn.is_input_close:
+        open_indices = ['x' + str(i) for i in range(n - 1, -1, -1)]
+    if not tn.is_output_close:
+        open_indices = open_indices + ['y' + str(i) for i in range(n - 1, -1, -1)]
+    open_indices = tuple(open_indices)
+    return open_indices
+
+
 """ This function convert TDD tensor network to input format for Cotengra, and considers hyper-edges """
 
 
@@ -498,8 +517,12 @@ def TNtoCotInput(tn_lbl, n=0, prnt=False):
             print(ts_data.shape)
             print('\n')
 
-    # Output indices
-    open_indices = tuple(['y' + str(i) for i in range(n - 1, -1, -1)])
+    """
+        romOlivo: This part reworked to actually set the correct indices. If is used the previous version,
+        some tests will fail, and the simulation using cotengra might not work (it depends when the output
+        indices were closed)
+    """
+    open_indices = generate_open_indices(tn_lbl)
 
     return tensor_list, open_indices, size_dict, arrays, oe_input
 
@@ -537,8 +560,12 @@ def TNtoCotInput2(tn_lbl, n=0, prnt=False):
             print(ts_data.shape)
             print('\n')
 
-    # Output indices
-    open_indices = tuple(['y' + str(i) + '_0' for i in range(n - 1, -1, -1)])
+    """
+        romOlivo: This part reworked to actually set the correct indices. If is used the previous version,
+        the test will not fail, but making the simulation using cotengra might not work (it depends when the 
+        output indices were closed)
+    """
+    open_indices = generate_open_indices(tn_lbl)
 
     return tensor_list, open_indices, size_dict, arrays, oe_input
 
@@ -752,4 +779,6 @@ def apply_full_tetris(tn, depth):
     tensors_tetris = squeezeTN(tn.tensors, n, depth)
     tensors_tetris = squeezeTN_ultra(tensors_tetris, n, depth)
     new_tn = TensorNetwork(tensors_tetris, tn.tn_type, n)
+    new_tn.is_input_close = tn.is_input_close
+    new_tn.is_output_close = tn.is_output_close
     return new_tn
