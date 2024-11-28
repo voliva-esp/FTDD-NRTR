@@ -742,3 +742,14 @@ def squeezeTN_ultra(tensors, qubit_num, depth, prnt=False):
                         tetris_stack[qubit].insert(0, ts_to_add)
 
     return ts_res
+
+
+def apply_full_tetris(tn, depth):
+    """
+        romOlivo: This method was added in order to simplify and reduce the number of error in the application of Tetris
+    """
+    n = tn.qubits_num
+    tensors_tetris = squeezeTN(tn.tensors, n, depth)
+    tensors_tetris = squeezeTN_ultra(tensors_tetris, n, depth)
+    new_tn = TensorNetwork(tensors_tetris, tn.tn_type, n)
+    return new_tn
