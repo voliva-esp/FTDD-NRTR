@@ -857,7 +857,7 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
     tdd = tn.cont_TN(path, False)
 
     """
-        This is important because this variable not always is filled correctly. I do not know why but i can fill
+        This is important because this variable not always is filled correctly. I do not know why but i can fill it
         correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
         you cannot execute the function 'to_array' of the resulting TDD.
     """
