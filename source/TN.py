@@ -40,6 +40,17 @@ class Tensor:
     def printTensor(self):
         print(self.name, self.qubits, ', depth ', self.depth, ', indices ', str([str(ind) for ind in self.index_set]))
 
+    def __hash__(self):
+        """
+            @romOlivo: From being able to use it with hash tables
+        """
+        def totuple(a):
+            try:
+                return tuple(totuple(i) for i in a)
+            except TypeError:
+                return a
+        return hash((totuple(self.data), totuple(self.index_set)))
+
 
 class TensorNetwork:
     def __init__(self, tensors=dict(), tn_type='tn', qubits_num=0):
@@ -53,6 +64,31 @@ class TensorNetwork:
         """
         self.is_input_close = False
         self.is_output_close = False
+        """
+            @romOlivo: This is for calculate the index set of the TN, as well as how many times each index has appeared.
+            Only filled if the function 'get_index_set' is called
+        """
+        self.index_set = None
+        self.index_2_tensor = dict()
+        self.index_count = None
+
+    def get_index_set(self):
+        """
+            @romOlivo: For listing and counting the indices of the tensor network
+        """
+        if self.index_set is not None:
+            return
+        self.index_set = set()
+        self.index_count = dict()
+        for ts in self.tensors:
+            temp_index = [idx.key for idx in ts.index_set]
+            for idx in temp_index:
+                self.index_set.add(idx)
+                if not idx in self.index_2_tensor:
+                    self.index_2_tensor[idx] = set()
+                    self.index_count[idx] = 0
+                self.index_2_tensor[idx].add(ts)
+                self.index_count[idx] += 1
 
     def cont(self, optimizer=None, prnt=False):
         tdd = get_identity_tdd()

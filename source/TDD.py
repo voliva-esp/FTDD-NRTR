@@ -56,6 +56,12 @@ class Index:
     def __str__(self):
         return str((self.key, self.idx))
 
+    def __hash__(self):
+        """
+            @romOlivo: From being able to use it with hash table
+        """
+        return hash((self.key, self.idx))
+
 
 class Node:
     """To define the node of TDD"""

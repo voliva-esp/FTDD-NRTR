@@ -814,6 +814,89 @@ def calculate_path(p_tn, method):
     return path
 
 
+def get_order_max(tn, n=1):
+    """
+        romOlivo: Gets the indices that are used in more tensors
+        Input variables:
+        tn -------> Tensor Network
+        n --------> Number of indices to return
+        Returning:
+        indices --> Str name of the indices
+    """
+    tn.get_index_set()
+    count_indices = [(tn.index_count[index], index) for index in tn.index_count.keys()]
+    count_indices.sort(reverse=True)
+    indices = [count_indices[0][1]]
+    return indices
+
+
+def replace_tensor(value, indx, tn, all_index):
+    """
+        romOlivo: This method modify the tensor network by replacing the index to slice to some new indices
+          which matches the new index of the new tensors that are put to give a concrete value to the index.
+        Input variables:
+        value ------> Value to set the index. Only can be 0 or 1.
+        indx -------> Str name of the index to slice.
+        tn ---------> Original Tensor Network.
+        all_index --> Array with all indices of the TN.
+        Returning:
+        Nothing. All the changes will be reflected in the tn and all_index parameters.
+    """
+    from copy import deepcopy
+    U0 = np.array([1, 0])
+    U1 = np.array([0, 1])
+    MATRICES = [U0, U1]
+    tensor_to_add = []
+    tensors_to_remove = []
+    j = 0
+    for tensor in tn.tensors:
+        tensor_to_insert = None
+        for i in range(len(tensor.index_set)):
+            if tensor.index_set[i].key == indx:
+                if tensor_to_insert is None:
+                    tensor_to_insert = deepcopy(tensor)
+                tensor_to_insert.index_set[i].key = f"{indx}#{j}"
+                all_index.append(f"{indx}#{j}")
+                tensor_to_add.append(Tensor(MATRICES[value],
+                                            [Index(f"{indx}#{j}", tensor.index_set[i].idx)],
+                                            'in',
+                                            [tensor.qubits[i // 2]]  # There is 2 indices for each qubit
+                                            )
+                                     )
+                j += 1
+        if tensor_to_insert is not None:
+            tensor_to_add.append(tensor_to_insert)
+            tensors_to_remove.append(tensor)
+    for tensor in tensors_to_remove:
+        tn.tensors.remove(tensor)
+    for tensor in tensor_to_add:
+        tn.tensors.append(tensor)
+
+
+def slicing(tn, all_index):
+    """
+        romOlivo: Generates copies of the tensor network given as input in which some indices were sliced.
+        Input variables:
+        tn ---------> Original Tensor Network
+        all_index --> Array that contains all the indices of the TN
+        Returning:
+        tns --------> Array of the TNs resulting of applying slicing
+    """
+    from copy import deepcopy
+    indices_to_slice = get_order_max(tn)
+    tns = [deepcopy(tn)]
+    for idx in indices_to_slice:
+        new_tns = []
+        for tn in tns:
+            new_tn = deepcopy(tn)
+            replace_tensor(0, idx, tn, all_index)
+            new_tns.append(tn)
+            replace_tensor(1, idx, new_tn, all_index)
+            new_tns.append(new_tn)
+        tns = new_tns
+    return tns
+
+
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
              contraction_method='seq'):
     """
@@ -849,6 +932,11 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
 
     # Calculate the path
     path = calculate_path(tn, contraction_method)
+
+    # Applying slicing
+    tns = [tn]
+    if use_slicing:
+        tns = slicing(tns[0], all_indices_lbl)
 
     # Initialize PyTDD
     Ini_TDD(all_indices_lbl)
