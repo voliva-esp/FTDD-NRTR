@@ -826,7 +826,7 @@ def get_order_max(tn, n=1):
     tn.get_index_set()
     count_indices = [(tn.index_count[index], index) for index in tn.index_count.keys()]
     count_indices.sort(reverse=True)
-    indices = [count_indices[0][1]]
+    indices = [count_indices[i][1] for i in range(n)]
     return indices
 
 
@@ -873,7 +873,7 @@ def replace_tensor(value, indx, tn, all_index):
         tn.tensors.append(tensor)
 
 
-def slicing(tn, all_index):
+def slicing(tn, all_index, n=1):
     """
         romOlivo: Generates copies of the tensor network given as input in which some indices were sliced.
         Input variables:
@@ -883,7 +883,7 @@ def slicing(tn, all_index):
         tns --------> Array of the TNs resulting of applying slicing
     """
     from copy import deepcopy
-    indices_to_slice = get_order_max(tn)
+    indices_to_slice = get_order_max(tn, n)
     tns = [deepcopy(tn)]
     for idx in indices_to_slice:
         new_tns = []
@@ -898,7 +898,7 @@ def slicing(tn, all_index):
 
 
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
-             contraction_method='seq'):
+             contraction_method='seq', n_indices=1):
     """
         romOlivo: This method was added to simplify the simulation process. It will encapsulate all the process
         after the circuit is read as a QuantumCircuit until you get the result of all the contraction.
@@ -912,7 +912,7 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         Returning:
         tdd ----------------> TDD that contains the result of contracting the tensor network
     """
-    from source.TDD import Ini_TDD
+    from source.TDD import Ini_TDD, add
 
     # Read and prepare the circuit
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
@@ -930,19 +930,23 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
     if use_tetris:
         tn = apply_full_tetris(tn, depth)
 
-    # Calculate the path
-    path = calculate_path(tn, contraction_method)
-
     # Applying slicing
     tns = [tn]
     if use_slicing:
-        tns = slicing(tns[0], all_indices_lbl)
+        tns = slicing(tns[0], all_indices_lbl, n=n_indices)
+
+    # Calculate the path
+    path = calculate_path(tns[0], contraction_method)
 
     # Initialize PyTDD
     Ini_TDD(all_indices_lbl)
 
     # Make the contractions
-    tdd = tn.cont_TN(path, False)
+    tdd = tns[0].cont_TN(path, False)
+
+    for i in range(1, len(tns)):
+        temp_tdd = tns[i].cont_TN(path, False)
+        tdd = add(tdd, temp_tdd)
 
     """
         This is important because this variable not always is filled correctly. I do not know why but i can fill it
