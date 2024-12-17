@@ -774,6 +774,18 @@ def squeezeTN_ultra(tensors, qubit_num, depth, prnt=False):
     return ts_res
 
 
+def get_cotengra_configuration():
+    """
+        @romOlivo: Added to configurate cotengra and use the same configuration in all methods.
+    """
+    import cotengra as ctg
+    return ctg.ReusableHyperOptimizer(
+            minimize=f'combo-{56}',
+            max_repeats=512,
+            max_time=7,
+            progbar=True,
+        )
+
 def apply_full_tetris(tn, depth):
     """
         romOlivo: This method was added in order to simplify and reduce the number of error in the application of Tetris
@@ -796,17 +808,11 @@ def calculate_path(p_tn, method):
         Returning:
         path ---> Contains the calculated contraction path
     """
-    import cotengra as ctg
     path = None
     n = p_tn.qubits_num
     if method == 'cot':
         tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
-        opt = ctg.ReusableHyperOptimizer(
-            minimize=f'combo-{56}',
-            max_repeats=512,
-            max_time=7,
-            progbar=True,
-        )
+        opt = get_cotengra_configuration()
         tree = opt.search(tensor_list, open_indices, size_dict)
         path = tree.get_path()
     else:
@@ -827,6 +833,42 @@ def get_order_max(tn, n=1):
     count_indices = [(tn.index_count[index], index) for index in tn.index_count.keys()]
     count_indices.sort(reverse=True)
     indices = [count_indices[i][1] for i in range(n)]
+    return indices
+
+
+def get_slice_cot(tn, n_qubits, n=1):
+    """
+        romOlivo: Gets the indices using cotengra
+        Input variables:
+        tn -------> Tensor Network
+        n_qubits--> Number of qubits of the TN
+        n --------> Number of indices to return
+        Returning:
+        indices --> Str name of the indices
+    """
+    tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n_qubits)
+    opt = get_cotengra_configuration()
+    tree = opt.search(tensor_list, open_indices, size_dict)
+    result = tree.slice(target_slices=n)
+    return result.sliced_inds
+
+
+def get_sliced_indices(tn, n, slicing_method, n_qubits=None):
+    """
+        romOlivo: Gets the indices to sliced, using the specified method
+        Input variables:
+        tn --------------> Tensor Network
+        n ---------------> Number of indices to return
+        slicing_method --> Method to use to calculate the indices. Can be 'max' or 'cot'
+        n_qubits --------> Number of qubits of the TN
+        Returning:
+        indices --> Str name of the indices
+    """
+    indices = ()
+    if slicing_method == "max":
+        indices = get_order_max(tn, n)
+    elif slicing_method == "cot":
+        indices = get_slice_cot(tn, n_qubits, n)
     return indices
 
 
@@ -873,17 +915,20 @@ def replace_tensor(value, indx, tn, all_index):
         tn.tensors.append(tensor)
 
 
-def slicing(tn, all_index, n=1):
+def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None):
     """
         romOlivo: Generates copies of the tensor network given as input in which some indices were sliced.
         Input variables:
-        tn ---------> Original Tensor Network
-        all_index --> Array that contains all the indices of the TN
+        tn --------------> Original Tensor Network
+        all_index -------> Array that contains all the indices of the TN
+        n ---------------> Number of indices to slice
+        slicing_method --> Method to use to calculate the indices. Can be 'max' or 'cot'
+        n_qubits --------> Number of qubits of the TN
         Returning:
-        tns --------> Array of the TNs resulting of applying slicing
+        tns -------------> Array of the TNs resulting of applying slicing
     """
     from copy import deepcopy
-    indices_to_slice = get_order_max(tn, n)
+    indices_to_slice = get_sliced_indices(tn, n, slicing_method, n_qubits=n_qubits)
     tns = [deepcopy(tn)]
     for idx in indices_to_slice:
         new_tns = []
@@ -898,7 +943,7 @@ def slicing(tn, all_index, n=1):
 
 
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
-             contraction_method='seq', n_indices=1):
+             contraction_method='seq', n_indices=1, slicing_method="max"):
     """
         romOlivo: This method was added to simplify the simulation process. It will encapsulate all the process
         after the circuit is read as a QuantumCircuit until you get the result of all the contraction.
@@ -909,6 +954,8 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         use_tetris ---------> True if you want to apply Tetris
         use_slicing --------> True if you want to apply slicing. NOT IMPLEMENTED YET
         contraction_method -> Name of the contraction method. Can be 'seq' or 'cot'
+        n_indices ----------> Number of indices to slice
+        slicing_method -----> Slicing method tu use. Can be 'max' or 'cot'
         Returning:
         tdd ----------------> TDD that contains the result of contracting the tensor network
     """
@@ -933,7 +980,7 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
     # Applying slicing
     tns = [tn]
     if use_slicing:
-        tns = slicing(tns[0], all_indices_lbl, n=n_indices)
+        tns = slicing(tns[0], all_indices_lbl, n=n_indices, n_qubits=n, slicing_method=slicing_method)
 
     # Calculate the path
     path = calculate_path(tns[0], contraction_method)
