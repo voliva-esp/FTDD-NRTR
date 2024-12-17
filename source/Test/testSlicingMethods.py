@@ -35,10 +35,10 @@ def create_medium_circuit():
     return medium_circuit
 
 
-def load_tn_circuit(is_ini_closed, is_final_closed, use_tetris, circuit='small'):
+def load_tn_circuit(is_ini_closed, is_final_closed, use_tetris, circuit_type='small'):
     global creator
     circuit = create_small_circuit()
-    if circuit=='medium':
+    if circuit_type == 'medium':
         circuit = create_medium_circuit()
     tn, all_indices, depth = cir_2_tn_lbl(circuit)
     n = get_real_qubit_num(circuit)
@@ -49,216 +49,234 @@ def load_tn_circuit(is_ini_closed, is_final_closed, use_tetris, circuit='small')
         add_outputs(tn, state, n)
     if use_tetris:
         tn = apply_full_tetris(tn, depth)
-    return tn, all_indices
+    return tn, all_indices, n
 
 
 class TestSlicingMethods(unittest.TestCase):
 
     def test_slicing_method_get_max_1_small_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_small_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_small_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_small_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_small_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_small_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_small_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_small_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_small_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_small_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_small_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_small_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_medium_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_medium_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_medium_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_4_medium_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 4)
         self.assertEqual(4, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_8_medium_simple_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 8)
         self.assertEqual(8, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_medium_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_medium_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_medium_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_4_medium_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 4)
         self.assertEqual(4, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_8_medium_simple_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 8)
         self.assertEqual(8, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_medium_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_medium_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_medium_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_4_medium_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 4)
         self.assertEqual(4, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_8_medium_tetris_open(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 8)
         self.assertEqual(8, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_1_medium_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 1)
         self.assertEqual(1, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_2_medium_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 2)
         self.assertEqual(2, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)
 
     def test_slicing_method_get_max_3_medium_tetris_close(self):
-        tn, all_indices = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True, circuit='medium')
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
         indices = get_order_max(tn, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
