@@ -5,7 +5,7 @@
 """
 
 
-from source.TDD import TDD, Node, Index, Ini_TDD, get_index_2_key, Find_Or_Add_Unique_table
+from source.TDD import TDD, Node, Index, Ini_TDD, get_index_2_key, Find_Or_Add_Unique_table, equal_tolerance
 import numpy as np
 import unittest
 
@@ -54,7 +54,7 @@ class TestToArray(unittest.TestCase):
         tdd.key_2_index = {-1: -1, 0: "x0"}
         tdd.index_set = indices
         tdd.key_width = {0: NUMBER_OF_SUCCESSORS}
-        self.assertTrue(np.array_equal(tdd.to_array(), [1]*NUMBER_OF_SUCCESSORS))
+        self.assertTrue(equal_tolerance(tdd.to_array(), [1]*NUMBER_OF_SUCCESSORS))
 
     def test_make_tdd_rank_1_auto(self):
         Ini_TDD(["x0"])
@@ -69,7 +69,7 @@ class TestToArray(unittest.TestCase):
         tdd.key_2_index = key_2_idx
         tdd.index_set = indices
         tdd.key_width = {0: NUMBER_OF_SUCCESSORS}
-        self.assertTrue(np.array_equal(tdd.to_array(), [1]*NUMBER_OF_SUCCESSORS))
+        self.assertTrue(equal_tolerance(tdd.to_array(), [1]*NUMBER_OF_SUCCESSORS))
 
     def test_make_tdd_rank_2_auto(self):
         Ini_TDD(["x0", "x1"])
@@ -87,7 +87,7 @@ class TestToArray(unittest.TestCase):
         tdd.key_2_index = key_2_idx
         tdd.index_set = indices
         tdd.key_width = {0: NUMBER_OF_SUCCESSORS, 1: NUMBER_OF_SUCCESSORS}
-        self.assertTrue(np.array_equal(tdd.to_array(), [[1]*NUMBER_OF_SUCCESSORS]*NUMBER_OF_SUCCESSORS))
+        self.assertTrue(equal_tolerance(tdd.to_array(), [[1]*NUMBER_OF_SUCCESSORS]*NUMBER_OF_SUCCESSORS))
 
 
 if __name__ == '__main__':

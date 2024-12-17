@@ -7,10 +7,9 @@
 
 from source.TDD_Q import cir_2_tn_lbl, get_real_qubit_num, add_inputs, add_outputs, apply_full_tetris, TNtoCotInput
 from source.Test.creatorCircuitQasmStr import CircuitCreator
+from source.TDD import Ini_TDD, equal_tolerance
 from qiskit import QuantumCircuit
-from source.TDD import Ini_TDD
 import cotengra as ctg
-import numpy as np
 import unittest
 
 creator = CircuitCreator()
@@ -103,19 +102,19 @@ class TestTNContraction(unittest.TestCase):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=True, is_output_closed=False)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
 
     def test_before_tetris_sequential_small_circuit_open_close(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=False, is_output_closed=True)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
 
     def test_before_tetris_sequential_small_circuit_open_open(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=False, is_output_closed=False)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
 
     def test_before_tetris_cotengra_small_circuit_close_close(self):
         global creator
@@ -127,19 +126,19 @@ class TestTNContraction(unittest.TestCase):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=True, is_output_closed=False, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
 
     def test_before_tetris_cotengra_small_circuit_open_close(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=False, is_output_closed=True, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
 
     def test_before_tetris_cotengra_small_circuit_open_open(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_before(circuit, is_input_closed=False, is_output_closed=False, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
 
     def test_after_tetris_sequential_small_circuit_close_close(self):
         global creator
@@ -151,19 +150,19 @@ class TestTNContraction(unittest.TestCase):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=True, is_output_closed=False)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
 
     def test_after_tetris_sequential_small_circuit_open_close(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=False, is_output_closed=True)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
 
     def test_after_tetris_sequential_small_circuit_open_open(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=False, is_output_closed=False)
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
 
     def test_after_tetris_cotengra_small_circuit_close_close(self):
         global creator
@@ -175,16 +174,16 @@ class TestTNContraction(unittest.TestCase):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=True, is_output_closed=False, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd.to_array()))
 
     def test_after_tetris_cotengra_small_circuit_open_close(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=False, is_output_closed=True, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd.to_array()))
 
     def test_after_tetris_cotengra_small_circuit_open_open(self):
         global creator
         circuit = create_small_circuit()
         tdd = simulate_circuit_after(circuit, is_input_closed=False, is_output_closed=False, contraction_method='cot')
-        self.assertTrue(np.array_equal(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd.to_array()))

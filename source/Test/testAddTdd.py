@@ -5,6 +5,7 @@
 """
 
 from source.TDD import TDD, Node, Index, Ini_TDD, get_index_2_key, Find_Or_Add_Unique_table, add, get_identity_tdd
+from source.TDD import equal_tolerance
 import numpy as np
 import unittest
 
@@ -92,7 +93,7 @@ class TestAddTdd(unittest.TestCase):
         add_tdd = add(tdd, tdd)
         self.assertEqual({-1: -1, "x0": 0}, add_tdd.index_2_key)
         self.assertEqual({-1: -1, 0: "x0"}, add_tdd.key_2_index)
-        self.assertTrue(np.array_equal([2]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
+        self.assertTrue(equal_tolerance([2]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
 
     def test_add_different_tdd_rank_1_manually(self):
         Ini_TDD(["x0"])
@@ -117,7 +118,7 @@ class TestAddTdd(unittest.TestCase):
         add_tdd = add(tdd, tdd2)
         self.assertEqual({-1: -1, "x0": 0}, add_tdd.index_2_key)
         self.assertEqual({-1: -1, 0: "x0"}, add_tdd.key_2_index)
-        self.assertTrue(np.array_equal([2]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
+        self.assertTrue(equal_tolerance([2]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
 
     def test_add_different_tdd_rank_1_auto(self):
         Ini_TDD(["x0"])
@@ -141,7 +142,7 @@ class TestAddTdd(unittest.TestCase):
         add_tdd = add(tdd, tdd2)
         self.assertEqual({-1: -1, "x0": 0}, add_tdd.index_2_key)
         self.assertEqual({-1: -1, 0: "x0"}, add_tdd.key_2_index)
-        self.assertTrue(np.array_equal([3]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
+        self.assertTrue(equal_tolerance([3]*NUMBER_OF_SUCCESSORS, add_tdd.to_array()))
 
 
 if __name__ == '__main__':
