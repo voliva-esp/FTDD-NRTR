@@ -12,6 +12,7 @@ import unittest
 
 creator = CircuitCreator()
 small_circuit = None
+medium_circuit = None
 
 
 def create_small_circuit():
@@ -22,6 +23,16 @@ def create_small_circuit():
     if small_circuit is None:
         small_circuit = QuantumCircuit.from_qasm_str(creator.create_small_circuit())
     return small_circuit
+
+
+def create_medium_circuit():
+    """
+        Creates a medium circuit using the class CircuitCreator. Returns a QuantumCircuit object
+    """
+    global creator, medium_circuit
+    if medium_circuit is None:
+        medium_circuit = QuantumCircuit.from_qasm_str(creator.create_medium_circuit())
+    return medium_circuit
 
 
 class TestSimulate(unittest.TestCase):
@@ -125,3 +136,99 @@ class TestSimulate(unittest.TestCase):
         circuit = create_small_circuit()
         tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True, contraction_method='cot')
         self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd.to_array()))
+
+    def test_simple_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True)
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd.to_array())
+
+    def test_simple_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd.to_array()))
+
+    def test_simple_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd.to_array()))
+
+    def test_simple_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))
+
+    def test_tetris_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True)
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd.to_array())
+
+    def test_tetris_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, use_tetris=True)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd.to_array()))
+
+    def test_tetris_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, use_tetris=True)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd.to_array()))
+
+    def test_tetris_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True)
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))
+
+    def test_cotengra_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, contraction_method='cot')
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd.to_array())
+
+    def test_cotengra_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd.to_array()))
+
+    def test_cotengra_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd.to_array()))
+
+    def test_cotengra_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))
+
+    def test_cotengra_tetris_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, contraction_method='cot')
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd.to_array())
+
+    def test_cotengra_tetris_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, use_tetris=True, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd.to_array()))
+
+    def test_cotengra_tetris_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, use_tetris=True, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd.to_array()))
+
+    def test_cotengra_tetris_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True, contraction_method='cot')
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))

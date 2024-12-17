@@ -10,12 +10,10 @@ from qiskit import QuantumCircuit
 from source.TDD import Ini_TDD
 import unittest
 
-# For generate the circuits
-from source.TN import TensorNetwork
-
 creator = CircuitCreator()
 # To not generate multiple times the same circuit
 small_circuit = None
+medium_circuit = None
 
 
 def generate_circuit(circuit, is_ini_closed, is_final_closed):
@@ -43,6 +41,16 @@ def create_small_circuit():
     if small_circuit is None:
         small_circuit = QuantumCircuit.from_qasm_str(creator.create_small_circuit())
     return small_circuit
+
+
+def create_medium_circuit():
+    """
+        Creates a medium circuit using the class CircuitCreator. Returns a QuantumCircuit object
+    """
+    global creator, medium_circuit
+    if medium_circuit is None:
+        medium_circuit = QuantumCircuit.from_qasm_str(creator.create_medium_circuit())
+    return medium_circuit
 
 
 class TestTNtoCotInput(unittest.TestCase):
@@ -211,6 +219,138 @@ class TestTNtoCotInput(unittest.TestCase):
         self.assertIn(('x0_0', 'x1_1'), tensor_list)
         self.assertIn(('x1_1', 'x1_2'), tensor_list)
         self.assertIn(('x1_2', 'x0_0'), tensor_list)
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(0, len(open_indices))
+        self.assertNotIn('x0', open_indices)
+        self.assertNotIn('x1', open_indices)
+        self.assertNotIn('x2', open_indices)
+        self.assertNotIn('y0', open_indices)
+        self.assertNotIn('y1', open_indices)
+        self.assertNotIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_simple_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=False, is_final_closed=False)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(19, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(6, len(open_indices))
+        self.assertIn('x0', open_indices)
+        self.assertIn('x1', open_indices)
+        self.assertIn('x2', open_indices)
+        self.assertIn('y0', open_indices)
+        self.assertIn('y1', open_indices)
+        self.assertIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_simple_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=False, is_final_closed=True)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(22, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(3, len(open_indices))
+        self.assertIn('x0', open_indices)
+        self.assertIn('x1', open_indices)
+        self.assertIn('x2', open_indices)
+        self.assertNotIn('y0', open_indices)
+        self.assertNotIn('y1', open_indices)
+        self.assertNotIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_simple_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=True, is_final_closed=False)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(22, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(3, len(open_indices))
+        self.assertNotIn('x0', open_indices)
+        self.assertNotIn('x1', open_indices)
+        self.assertNotIn('x2', open_indices)
+        self.assertIn('y0', open_indices)
+        self.assertIn('y1', open_indices)
+        self.assertIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_simple_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=True, is_final_closed=True)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(25, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(0, len(open_indices))
+        self.assertNotIn('x0', open_indices)
+        self.assertNotIn('x1', open_indices)
+        self.assertNotIn('x2', open_indices)
+        self.assertNotIn('y0', open_indices)
+        self.assertNotIn('y1', open_indices)
+        self.assertNotIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_tetris_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=False, is_final_closed=False)
+        tn = apply_full_tetris(tn, depth)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(9, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(6, len(open_indices))
+        self.assertIn('x0', open_indices)
+        self.assertIn('x1', open_indices)
+        self.assertIn('x2', open_indices)
+        self.assertIn('y0', open_indices)
+        self.assertIn('y1', open_indices)
+        self.assertIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_tetris_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=False, is_final_closed=True)
+        tn = apply_full_tetris(tn, depth)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(9, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(3, len(open_indices))
+        self.assertIn('x0', open_indices)
+        self.assertIn('x1', open_indices)
+        self.assertIn('x2', open_indices)
+        self.assertNotIn('y0', open_indices)
+        self.assertNotIn('y1', open_indices)
+        self.assertNotIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_tetris_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=True, is_final_closed=False)
+        tn = apply_full_tetris(tn, depth)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(9, len(tensor_list))
+        """ Tests if the open indices are correctly set """
+        self.assertEqual(3, len(open_indices))
+        self.assertNotIn('x0', open_indices)
+        self.assertNotIn('x1', open_indices)
+        self.assertNotIn('x2', open_indices)
+        self.assertIn('y0', open_indices)
+        self.assertIn('y1', open_indices)
+        self.assertIn('y2', open_indices)
+
+    def test_TNtoCotInput_medium_tetris_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tn, depth, n = generate_circuit(circuit, is_ini_closed=True, is_final_closed=True)
+        tn = apply_full_tetris(tn, depth)
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n)
+        """ Tests if the tensors are correctly set """
+        self.assertEqual(9, len(tensor_list))
         """ Tests if the open indices are correctly set """
         self.assertEqual(0, len(open_indices))
         self.assertNotIn('x0', open_indices)

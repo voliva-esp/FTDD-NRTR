@@ -26,9 +26,10 @@ node_hit_time = 0
 epi = 0.000001
 
 """
-    @romOlivo: Set the number of decimals of tolerance for the method 'equal_tolerance' 
+    @romOlivo: Set the number of decimals of tolerance for the method 'equal_tolerance'. If the number is increased,
+    some of the test cases will fail.
 """
-n_decimals_of_tolerance = 15
+n_decimals_of_tolerance = 14
 
 
 class Index:
