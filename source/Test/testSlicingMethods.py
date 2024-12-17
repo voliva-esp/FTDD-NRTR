@@ -4,6 +4,7 @@
 
 """
 from source.TDD_Q import cir_2_tn_lbl, get_real_qubit_num, add_inputs, add_outputs, get_order_max, apply_full_tetris
+from source.TDD_Q import get_slice_cot
 from source.Test.creatorCircuitQasmStr import CircuitCreator
 from qiskit import QuantumCircuit
 import unittest
@@ -278,6 +279,234 @@ class TestSlicingMethods(unittest.TestCase):
         tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
                                              circuit_type='medium')
         indices = get_order_max(tn, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_small_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_small_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_small_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False)
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_small_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_small_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_small_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False)
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_small_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_small_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_small_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True)
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_small_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_small_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_small_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True)
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_medium_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_medium_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_medium_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_4_medium_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 4)
+        self.assertEqual(4, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_8_medium_simple_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 8)
+        self.assertEqual(8, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_medium_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_medium_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_medium_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_4_medium_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 4)
+        self.assertEqual(4, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_8_medium_simple_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=False,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 8)
+        self.assertEqual(8, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_medium_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_medium_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_medium_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 3)
+        self.assertEqual(3, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_4_medium_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 4)
+        self.assertEqual(4, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_8_medium_tetris_open(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=False, is_final_closed=False, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 8)
+        self.assertEqual(8, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_1_medium_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 1)
+        self.assertEqual(1, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_2_medium_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 2)
+        self.assertEqual(2, len(indices))
+        for index in indices:
+            self.assertIn(index, all_indices)
+
+    def test_slicing_method_cot_3_medium_tetris_close(self):
+        tn, all_indices, n = load_tn_circuit(is_ini_closed=True, is_final_closed=True, use_tetris=True,
+                                             circuit_type='medium')
+        indices = get_slice_cot(tn, n, 3)
         self.assertEqual(3, len(indices))
         for index in indices:
             self.assertIn(index, all_indices)

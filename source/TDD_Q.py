@@ -849,7 +849,7 @@ def get_slice_cot(tn, n_qubits, n=1):
     tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(tn, n_qubits)
     opt = get_cotengra_configuration()
     tree = opt.search(tensor_list, open_indices, size_dict)
-    result = tree.slice(target_slices=n)
+    result = tree.slice(target_slices=2**n)
     return result.sliced_inds
 
 
