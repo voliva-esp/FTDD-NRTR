@@ -25,6 +25,11 @@ node_find_time = 0
 node_hit_time = 0
 epi = 0.000001
 
+"""
+    @romOlivo: Set the number of decimals of tolerance for the method 'equal_tolerance' 
+"""
+n_decimals_of_tolerance = 15
+
 
 class Index:
     """
@@ -240,6 +245,19 @@ class TDD:
             return True
         else:
             return False
+
+
+def equal_tolerance(data1, data2):
+    """
+        @romOlivo: Compares 2 data structures (tdd or matrices) with some tolerance in the result
+    """
+    matrix1 = data1
+    if isinstance(data1, TDD):
+        matrix1 = data1.to_array()
+    matrix2 = data2
+    if isinstance(data2, TDD):
+        matrix2 = data2.to_array()
+    return np.array_equal(np.round(matrix1, n_decimals_of_tolerance), np.round(matrix2, n_decimals_of_tolerance))
 
 
 def layout(node, key_2_idx, dot=Digraph(), succ=[], real_label=True):
