@@ -670,3 +670,32 @@ class TestSimulateSlicing(unittest.TestCase):
         tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True, use_slicing=True,
                        n_indices=8, slicing_method='cot')
         self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))
+
+
+    def test_slicing_GTN_max_1_tetris_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        matrix = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
+                       backend="GTN")
+        self.assertEqual(creator.get_small_circuit_solution_close_close(), matrix)
+
+    def test_slicing_GTN_cot_2_simple_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        matrix = simulate(circuit, is_input_closed=True, is_output_closed=True, use_slicing=True, n_indices=2,
+                       slicing_method='cot', backend="GTN")
+        self.assertEqual(creator.get_small_circuit_solution_close_close(), matrix)
+
+    def test_slicing_GTN_max_4_simple_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        matrix = simulate(circuit, is_input_closed=True, is_output_closed=True, use_slicing=True, n_indices=4,
+                       backend="GTN")
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), matrix)
+
+    def test_slicing_GTN_cot_8_tetris_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        matrix = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
+                       n_indices=8, slicing_method='cot', backend="GTN")
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), matrix)

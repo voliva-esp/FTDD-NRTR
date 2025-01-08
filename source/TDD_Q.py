@@ -979,7 +979,7 @@ def contract_with_PyTDD(path, tns, indices):
     return tdd
 
 
-def contract_with_GTN(path, tns,):
+def contract_with_GTN(path, tns):
     """
         romOlivo: Makes all the contractions using GTN
         Input variables:
@@ -992,10 +992,12 @@ def contract_with_GTN(path, tns,):
 
     # Make the contractions
     result, t_total = tns[0].cont_GTN(path, False)
+    result = result[0].tensor
 
     for i in range(1, len(tns)):
-        temp_result = tns[i].cont_GTN(path, False)
-        result, t_contraction = [temp_result[i] + result [i] for i in range(len(result))]
+        temp_result, t_contraction = tns[i].cont_GTN(path, False)
+        temp_result = temp_result[0].tensor
+        result = temp_result + result
         t_total += t_contraction
 
     print(f"Time spent: {t_total}")
