@@ -782,7 +782,7 @@ def get_cotengra_configuration():
     return ctg.ReusableHyperOptimizer(
             minimize=f'combo-{56}',
             max_repeats=512,
-            max_time=7,
+            max_time=60,
             progbar=True,
         )
 
@@ -942,8 +942,69 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None):
     return tns
 
 
+def contract_with_PyTDD(path, tns, indices):
+    """
+        romOlivo: Makes all the contractions using PyTDD
+        Input variables:
+        path -----> Contraction path to use
+        tns ------> List of all Tensor Networks to contract (1 if no slicing had been applied)
+        indices --> List of all indices of the Tensor Networks
+        Returning:
+        tdd ------> TDD that contains the result of contracting the tensor network
+    """
+    from source.TDD import Ini_TDD, add
+    from time import time
+
+    # Initialize PyTDD
+    Ini_TDD(indices)
+
+    t_ini = time()
+    # Make the contractions
+    tdd = tns[0].cont_TN(path, False)
+
+    for i in range(1, len(tns)):
+        temp_tdd = tns[i].cont_TN(path, False)
+        tdd = add(tdd, temp_tdd)
+
+    t_fin = time()
+    print(f"Time (s): {t_fin-t_ini}")
+    """
+        This is important because this variable not always is filled correctly. I do not know why but i can fill it
+        correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
+        you cannot execute the function 'to_array' of the resulting TDD.
+    """
+    for i in range(len(tdd.key_2_index.keys()) - 1):
+        tdd.key_width[i] = 2
+
+    return tdd
+
+
+def contract_with_GTN(path, tns,):
+    """
+        romOlivo: Makes all the contractions using GTN
+        Input variables:
+        path -----> Contraction path to use
+        tns ------> List of all Tensor Networks to contract (1 if no slicing had been applied)
+        indices --> List of all indices of the Tensor Networks
+        Returning:
+        tdd ------> Matrix that contains the result of contracting the tensor network
+    """
+
+    # Make the contractions
+    result, t_total = tns[0].cont_GTN(path, False)
+
+    for i in range(1, len(tns)):
+        temp_result = tns[i].cont_GTN(path, False)
+        result, t_contraction = [temp_result[i] + result [i] for i in range(len(result))]
+        t_total += t_contraction
+
+    print(f"Time spent: {t_total}")
+
+    return result
+
+
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
-             contraction_method='seq', n_indices=1, slicing_method="max"):
+             contraction_method='seq', n_indices=1, slicing_method="max", backend="PyTDD"):
     """
         romOlivo: This method was added to simplify the simulation process. It will encapsulate all the process
         after the circuit is read as a QuantumCircuit until you get the result of all the contraction.
@@ -959,7 +1020,6 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         Returning:
         tdd ----------------> TDD that contains the result of contracting the tensor network
     """
-    from source.TDD import Ini_TDD, add
 
     # Read and prepare the circuit
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
@@ -985,22 +1045,11 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
     # Calculate the path
     path = calculate_path(tns[0], contraction_method)
 
-    # Initialize PyTDD
-    Ini_TDD(all_indices_lbl)
+    tdd = None
+    if backend == "PyTDD":
+        tdd = contract_with_PyTDD(path, tns, all_indices_lbl)
+    elif backend == "GTN":
+        tdd = contract_with_GTN(path, tns)
 
-    # Make the contractions
-    tdd = tns[0].cont_TN(path, False)
-
-    for i in range(1, len(tns)):
-        temp_tdd = tns[i].cont_TN(path, False)
-        tdd = add(tdd, temp_tdd)
-
-    """
-        This is important because this variable not always is filled correctly. I do not know why but i can fill it
-        correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
-        you cannot execute the function 'to_array' of the resulting TDD.
-    """
-    for i in range(len(tdd.key_2_index.keys()) - 1):
-        tdd.key_width[i] = 2
     return tdd
 

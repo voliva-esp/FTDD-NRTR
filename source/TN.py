@@ -160,13 +160,17 @@ class TensorNetwork:
 
     """
         Contraction using GTN with a given order
-        Added by Qirui Zhang (qiruizh@umich.edu) 
+        Added by Qirui Zhang (qiruizh@umich.edu)
+        @romOlivo: Modified so can be measured the time of the actual contraction. It is returned at the end
     """
 
     def cont_GTN(self, path_cot, debug=False):
         path_list = list(path_cot)
         tensor_list = [(gtn.Node(np.squeeze(ts.data).astype(np.complex128), name=ts.name), ts.index_set) for ts in
                        self.tensors]
+
+        from time import time
+        t_ini = time()
 
         for i in range(len(path_list)):
             pair = path_list[i]
@@ -186,12 +190,15 @@ class TensorNetwork:
             tensor_list.pop(min(pair))
             tensor_list.append(ts_c)
 
+        t_fin = time()
+        t_spent = t_fin - t_ini
+
         if len(tensor_list) != 1:
             print("Error: Resulted TDD list length is ", len(tensor_list), " but not one!")
             return False
 
         ts = tensor_list[0]
-        return ts
+        return ts, t_spent
 
 
 """
