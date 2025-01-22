@@ -779,7 +779,7 @@ def get_cotengra_configuration():
         @romOlivo: Added to configurate cotengra and use the same configuration in all methods.
     """
     import cotengra as ctg
-    return ctg.ReusableHyperOptimizer(
+    return ctg.HyperOptimizer(
             minimize=f'combo-{56}',
             max_repeats=512,
             max_time=60,
@@ -890,29 +890,31 @@ def replace_tensor(value, indx, tn, all_index):
     MATRICES = [U0, U1]
     tensor_to_add = []
     tensors_to_remove = []
-    j = 0
-    for tensor in tn.tensors:
+    for j in range(len(tn.tensors)):
+        tensor = tn.tensors[j]
         tensor_to_insert = None
+        tensors_to_contract = []
         for i in range(len(tensor.index_set)):
             if tensor.index_set[i].key == indx:
                 if tensor_to_insert is None:
                     tensor_to_insert = deepcopy(tensor)
                 tensor_to_insert.index_set[i].key = f"{indx}#{j}"
-                all_index.append(f"{indx}#{j}")
-                tensor_to_add.append(Tensor(MATRICES[value],
-                                            [Index(f"{indx}#{j}", tensor.index_set[i].idx)],
-                                            'in',
-                                            [tensor.qubits[i // 2]]  # There is 2 indices for each qubit
-                                            )
-                                     )
-                j += 1
+                new_tensor = Tensor(MATRICES[value],
+                                    [Index(f"{indx}#{j}", tensor.index_set[i].idx)],
+                                    'in',
+                                    [tensor.qubits[i // 2]]  # There is 2 indices for each qubit
+                                    )
+                tensors_to_contract.append(new_tensor)
         if tensor_to_insert is not None:
-            tensor_to_add.append(tensor_to_insert)
-            tensors_to_remove.append(tensor)
+            for tensor in tensors_to_contract:
+                tensor_to_insert = contTensor(tensor_to_insert, tensor)
+            tn.tensors[j] = tensor_to_insert
     for tensor in tensors_to_remove:
         tn.tensors.remove(tensor)
     for tensor in tensor_to_add:
         tn.tensors.append(tensor)
+    if indx in all_index:
+        all_index.remove(indx)
 
 
 def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None):
@@ -930,6 +932,7 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None):
     from copy import deepcopy
     indices_to_slice = get_sliced_indices(tn, n, slicing_method, n_qubits=n_qubits)
     tns = [deepcopy(tn)]
+    # print(indices_to_slice)
     for idx in indices_to_slice:
         new_tns = []
         for tn in tns:
@@ -958,16 +961,25 @@ def contract_with_PyTDD(path, tns, indices):
     # Initialize PyTDD
     Ini_TDD(indices)
 
+    t_total = 0
     t_ini = time()
     # Make the contractions
     tdd = tns[0].cont_TN(path, False)
+    t_fin = time()
+    t_partial = t_fin-t_ini
+    # print(t_partial)
+    t_total += t_partial
 
     for i in range(1, len(tns)):
+        t_ini = time()
         temp_tdd = tns[i].cont_TN(path, False)
         tdd = add(tdd, temp_tdd)
+        t_fin = time()
+        t_partial = t_fin - t_ini
+        # print(t_partial)
+        t_total += t_partial
 
-    t_fin = time()
-    print(f"Time (s): {t_fin-t_ini}")
+    # print(f"Time (s): {t_total}")
     """
         This is important because this variable not always is filled correctly. I do not know why but i can fill it
         correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
@@ -992,15 +1004,17 @@ def contract_with_GTN(path, tns):
 
     # Make the contractions
     result, t_total = tns[0].cont_GTN(path, False)
+    # print(t_total)
     result = result[0].tensor
 
     for i in range(1, len(tns)):
         temp_result, t_contraction = tns[i].cont_GTN(path, False)
         temp_result = temp_result[0].tensor
         result = temp_result + result
+        # print(t_contraction)
         t_total += t_contraction
 
-    print(f"Time spent: {t_total}")
+    # print(f"Time spent: {t_total}")
 
     return result
 
