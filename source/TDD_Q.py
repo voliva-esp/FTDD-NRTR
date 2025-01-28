@@ -782,9 +782,10 @@ def get_cotengra_configuration():
     return ctg.HyperOptimizer(
             minimize=f'combo-{56}',
             max_repeats=512,
-            max_time=60,
+            max_time=600,
             progbar=True,
         )
+
 
 def apply_full_tetris(tn, depth):
     """
@@ -799,14 +800,15 @@ def apply_full_tetris(tn, depth):
     return new_tn
 
 
-def calculate_path(p_tn, method):
+def calculate_path(p_tn, method, tensors_to_slice=()):
     """
         romOlivo: This method is added to encapsulate all the methods that calculates the contraction path of a circuit.
         Input variables:
-        p_tn ---> Tensor Network you want to calculate the contraction path
-        method -> Str with the method want to calculate the path. Could be 'seq' or 'cot'.
+        p_tn --------------> Tensor Network you want to calculate the contraction path
+        method ------------> Str with the method want to calculate the path. Could be 'seq', 'cot', 'pair or 'spair'.
+        tensors_to_slice --> Array with the positions of the tensors to slice. Only used with 'spair'
         Returning:
-        path ---> Contains the calculated contraction path
+        path --------------> Contains the calculated contraction path
     """
     path = None
     n = p_tn.qubits_num
@@ -815,6 +817,10 @@ def calculate_path(p_tn, method):
         opt = get_cotengra_configuration()
         tree = opt.search(tensor_list, open_indices, size_dict)
         path = tree.get_path()
+    elif method == 'pair':
+        path = p_tn.get_pairing_path()
+    elif method == 'spair':
+        path = p_tn.get_smart_pairing_path(tensors_to_slice)
     else:
         path = p_tn.get_seq_path()
     return path
@@ -872,15 +878,16 @@ def get_sliced_indices(tn, n, slicing_method, n_qubits=None):
     return indices
 
 
-def replace_tensor(value, indx, tn, all_index):
+def replace_tensor(value, indx, tn, all_index, all_tensors=None):
     """
         romOlivo: This method modify the tensor network by replacing the index to slice to some new indices
           which matches the new index of the new tensors that are put to give a concrete value to the index.
         Input variables:
-        value ------> Value to set the index. Only can be 0 or 1.
-        indx -------> Str name of the index to slice.
-        tn ---------> Original Tensor Network.
-        all_index --> Array with all indices of the TN.
+        value --------> Value to set the index. Only can be 0 or 1.
+        indx ---------> Str name of the index to slice.
+        tn -----------> Original Tensor Network.
+        all_index ----> Array with all indices of the TN.
+        all_tensors --> Array to store the positions of the sliced tensors. If 'None', it will not store the positions.
         Returning:
         Nothing. All the changes will be reflected in the tn and all_index parameters.
     """
@@ -896,6 +903,8 @@ def replace_tensor(value, indx, tn, all_index):
         tensors_to_contract = []
         for i in range(len(tensor.index_set)):
             if tensor.index_set[i].key == indx:
+                if all_tensors is not None:
+                    all_tensors.add(j)
                 if tensor_to_insert is None:
                     tensor_to_insert = deepcopy(tensor)
                 tensor_to_insert.index_set[i].key = f"{indx}#{j}"
@@ -917,31 +926,37 @@ def replace_tensor(value, indx, tn, all_index):
         all_index.remove(indx)
 
 
-def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None):
+def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None, tensors_to_slice=None):
     """
         romOlivo: Generates copies of the tensor network given as input in which some indices were sliced.
         Input variables:
-        tn --------------> Original Tensor Network
-        all_index -------> Array that contains all the indices of the TN
-        n ---------------> Number of indices to slice
-        slicing_method --> Method to use to calculate the indices. Can be 'max' or 'cot'
-        n_qubits --------> Number of qubits of the TN
+        tn ----------------> Original Tensor Network
+        all_index ---------> Array that contains all the indices of the TN
+        n -----------------> Number of indices to slice
+        slicing_method ----> Method to use to calculate the indices. Can be 'max' or 'cot'
+        n_qubits ----------> Number of qubits of the TN
+        tensors_to_slice --> Array with the positions of the tensors to slice
         Returning:
-        tns -------------> Array of the TNs resulting of applying slicing
+        tns ---------------> Array of the TNs resulting of applying slicing
     """
     from copy import deepcopy
     indices_to_slice = get_sliced_indices(tn, n, slicing_method, n_qubits=n_qubits)
     tns = [deepcopy(tn)]
-    # print(indices_to_slice)
+    all_tensors = set()
     for idx in indices_to_slice:
         new_tns = []
         for tn in tns:
             new_tn = deepcopy(tn)
-            replace_tensor(0, idx, tn, all_index)
+            replace_tensor(0, idx, tn, all_index, all_tensors=all_tensors)
             new_tns.append(tn)
             replace_tensor(1, idx, new_tn, all_index)
             new_tns.append(new_tn)
         tns = new_tns
+    if tensors_to_slice is not None:
+        all_tensors_list = list(all_tensors)
+        all_tensors_list.sort()
+        for it in all_tensors_list:
+            tensors_to_slice.append(it)
     return tns
 
 
@@ -967,7 +982,7 @@ def contract_with_PyTDD(path, tns, indices):
     tdd = tns[0].cont_TN(path, False)
     t_fin = time()
     t_partial = t_fin-t_ini
-    # print(t_partial)
+    print(t_partial)
     t_total += t_partial
 
     for i in range(1, len(tns)):
@@ -976,10 +991,10 @@ def contract_with_PyTDD(path, tns, indices):
         tdd = add(tdd, temp_tdd)
         t_fin = time()
         t_partial = t_fin - t_ini
-        # print(t_partial)
+        print(t_partial)
         t_total += t_partial
 
-    # print(f"Time (s): {t_total}")
+    print(f"Time (s): {t_total}")
     """
         This is important because this variable not always is filled correctly. I do not know why but i can fill it
         correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
@@ -997,24 +1012,23 @@ def contract_with_GTN(path, tns):
         Input variables:
         path -----> Contraction path to use
         tns ------> List of all Tensor Networks to contract (1 if no slicing had been applied)
-        indices --> List of all indices of the Tensor Networks
         Returning:
         tdd ------> Matrix that contains the result of contracting the tensor network
     """
 
     # Make the contractions
     result, t_total = tns[0].cont_GTN(path, False)
-    # print(t_total)
+    print(t_total)
     result = result[0].tensor
 
     for i in range(1, len(tns)):
         temp_result, t_contraction = tns[i].cont_GTN(path, False)
         temp_result = temp_result[0].tensor
         result = temp_result + result
-        # print(t_contraction)
+        print(t_contraction)
         t_total += t_contraction
 
-    # print(f"Time spent: {t_total}")
+    print(f"Time spent: {t_total}")
 
     return result
 
@@ -1030,7 +1044,7 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         is_output_closed ---> True if you want to close the output
         use_tetris ---------> True if you want to apply Tetris
         use_slicing --------> True if you want to apply slicing. NOT IMPLEMENTED YET
-        contraction_method -> Name of the contraction method. Can be 'seq' or 'cot'
+        contraction_method -> Name of the contraction method. Can be 'seq', 'cot', 'pair or 'spair'
         n_indices ----------> Number of indices to slice
         slicing_method -----> Slicing method tu use. Can be 'max' or 'cot'
         Returning:
@@ -1054,12 +1068,14 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         tn = apply_full_tetris(tn, depth)
 
     # Applying slicing
+    tensors_to_slice = []
     tns = [tn]
     if use_slicing:
-        tns = slicing(tns[0], all_indices_lbl, n=n_indices, n_qubits=n, slicing_method=slicing_method)
+        tns = slicing(tns[0], all_indices_lbl, n=n_indices, n_qubits=n, slicing_method=slicing_method,
+                      tensors_to_slice=tensors_to_slice)
 
     # Calculate the path
-    path = calculate_path(tns[0], contraction_method)
+    path = calculate_path(tns[0], contraction_method, tensors_to_slice=tensors_to_slice)
 
     tdd = None
     if backend == "PyTDD":

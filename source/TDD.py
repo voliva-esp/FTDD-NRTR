@@ -252,6 +252,7 @@ def equal_tolerance(data1, data2):
     """
         @romOlivo: Compares 2 data structures (tdd or matrices) with some tolerance in the result
     """
+    print(f"d1: {data1} --- d2: {data2}")
     matrix1 = data1
     if isinstance(data1, TDD):
         matrix1 = data1.to_array()

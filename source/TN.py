@@ -124,6 +124,67 @@ class TensorNetwork:
 
         return tuple(path)
 
+    def get_pairing_path(self, n=None, d_ini=0, d_fin=0):
+        """
+            romOlivo: Generate the pairing contraction path
+        """
+        path = []
+        if n is None:
+            n = len(self.tensors)
+        is_first_time = True
+        d = d_ini
+        while n != 1:
+            i = n - 1
+            n = (n - n % 2) // 2
+            while i > 0:
+                if i == 2:
+                    path.append((0+d, 1+d))
+                    if is_first_time:
+                        path.append((0+d, n+d+d_fin))
+                    else:
+                        path.append((0+d, n+d))
+                else:
+                    path.append((0+d, 1+d))
+                i -= 2
+            if is_first_time:
+                is_first_time = False
+                d += d_fin
+        # print(path)
+        return tuple(path)
+
+    def get_smart_pairing_path(self, tensors_to_slice=[]):
+        """
+            romOlivo: Generate the smart pairing contraction path
+        """
+        number_of_blocks = 1 + len(tensors_to_slice) * 2
+        current_length = len(self.tensors)
+        total_path = []
+        last_tensor = 0
+        d_f = 0
+        if current_length-1 not in tensors_to_slice:
+            tensors_to_slice.append(current_length)
+        if number_of_blocks > 1:
+            for i in range(len(tensors_to_slice)):
+                n = int(tensors_to_slice[i]) - last_tensor
+                # Edge case
+                if n < 2:
+                    d_f += n
+                    number_of_blocks -= 1
+                    last_tensor = tensors_to_slice[i] + 1
+                    continue
+                d_ini = i + d_f
+                d_fin = current_length - n - d_ini
+                partial_path = self.get_pairing_path(n=n, d_ini=d_ini, d_fin=d_fin)
+                current_length = current_length - n + 1
+                total_path += partial_path
+                last_tensor = tensors_to_slice[i] + 1
+            # Final contractions
+            partial_path = self.get_pairing_path(n=current_length)
+            total_path += partial_path
+        else:
+            total_path = self.get_pairing_path()
+        return tuple(total_path)
+
     """
         PyTDD Contraction with a given order
         Added by Qirui Zhang (qiruizh@umich.edu) 
@@ -142,6 +203,13 @@ class TensorNetwork:
             # Acquire the tensors pointed to by the pair
             tdd_a = tdd_list[pair[0]]
             tdd_b = tdd_list[pair[1]]
+            """
+            try:
+                tdd_a = tdd_list[pair[0]]
+                tdd_b = tdd_list[pair[1]]
+            except:
+                print(pair[0])
+            """
 
             # Perform contraction
             tdd_c = cont(tdd_a, tdd_b)

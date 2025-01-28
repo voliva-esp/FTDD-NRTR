@@ -38,6 +38,9 @@ def create_medium_circuit():
 
 
 class TestSimulateSlicing(unittest.TestCase):
+    """
+        Suite created for testing the full process of slicing a circuit and contract all the corresponding sub circuits.
+    """
 
     def test_slicing_max_1_simple_small_circuit_close_close(self):
         global creator
@@ -671,7 +674,6 @@ class TestSimulateSlicing(unittest.TestCase):
                        n_indices=8, slicing_method='cot')
         self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd.to_array()))
 
-
     def test_slicing_GTN_max_1_tetris_small_circuit_close_close(self):
         global creator
         circuit = create_small_circuit()
@@ -699,3 +701,38 @@ class TestSimulateSlicing(unittest.TestCase):
         matrix = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
                        n_indices=8, slicing_method='cot', backend="GTN")
         self.assertEqual(creator.get_medium_circuit_solution_close_close(), matrix)
+
+    def test_slicing_spair_max_1_tetris_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
+                       contraction_method="spair", n_indices=1)
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_close(), tdd.to_array()))
+
+    def test_slicing_spair_max_2_tetris_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
+                       contraction_method="spair", n_indices=2)
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_close(), tdd.to_array()))
+
+    def test_slicing_spair_cot_2_simple_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_slicing=True, n_indices=2,
+                       slicing_method='cot', contraction_method="spair")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_close(), tdd.to_array()))
+
+    def test_slicing_spair_max_4_simple_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_slicing=True, n_indices=4,
+                       contraction_method="spair")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_close(), tdd.to_array()))
+
+    def test_slicing_spair_cot_8_tetris_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, use_slicing=True,
+                       n_indices=8, slicing_method='cot', contraction_method="spair")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_close(), tdd.to_array()))
