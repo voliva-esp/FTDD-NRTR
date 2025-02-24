@@ -878,7 +878,7 @@ def get_sliced_indices(tn, n, slicing_method, n_qubits=None):
     return indices
 
 
-def replace_tensor(value, indx, tn, all_index, all_tensors=None):
+def replace_tensor(value, indx, tn, all_index=None, all_tensors=None):
     """
         romOlivo: This method modify the tensor network by replacing the index to slice to some new indices
           which matches the new index of the new tensors that are put to give a concrete value to the index.
@@ -922,7 +922,7 @@ def replace_tensor(value, indx, tn, all_index, all_tensors=None):
         tn.tensors.remove(tensor)
     for tensor in tensor_to_add:
         tn.tensors.append(tensor)
-    if indx in all_index:
+    if all_index is not None and indx in all_index:
         all_index.remove(indx)
 
 
@@ -939,10 +939,20 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None, tensors_to_
         Returning:
         tns ---------------> Array of the TNs resulting of applying slicing
     """
+    def make_values(n_values, iteration):
+        dev_values = [0] * n_values
+        for i in range(n_values - 1, -1, -1):
+            if iteration >= (2 ** i):
+                iteration -= 2 ** i
+                dev_values[i] = 1
+        return dev_values
+
     from copy import deepcopy
     indices_to_slice = get_sliced_indices(tn, n, slicing_method, n_qubits=n_qubits)
-    tns = [deepcopy(tn)]
+    # tns = [deepcopy(tn)]
+    tns = []
     all_tensors = set()
+    """
     for idx in indices_to_slice:
         new_tns = []
         for tn in tns:
@@ -952,6 +962,11 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None, tensors_to_
             replace_tensor(1, idx, new_tn, all_index)
             new_tns.append(new_tn)
         tns = new_tns
+    """
+    n_indices = len(indices_to_slice)
+    for i in range(2**n_indices):
+        tns.append(SlicedTensorNetwork(tn, indices_to_slice, make_values(n_indices, i)))
+    # Updated and filled, if needed, the 'tensors_to_slice' variable
     if tensors_to_slice is not None:
         all_tensors_list = list(all_tensors)
         all_tensors_list.sort()
@@ -979,16 +994,16 @@ def contract_with_PyTDD(path, tns, indices):
     t_total = 0
     t_ini = time()
     # Make the contractions
-    tdd = tns[0].cont_TN(path, False)
+    tdd = tns[0].generate_tn().cont_TN(path, False)
     t_fin = time()
     t_partial = t_fin-t_ini
     print(t_partial)
     t_total += t_partial
 
     for i in range(1, len(tns)):
-        Clear_TDD()
+        # Clear_TDD()
         t_ini = time()
-        temp_tdd = tns[i].cont_TN(path, False)
+        temp_tdd = tns[i].generate_tn().cont_TN(path, False)
         t_fin = time()
         tdd = add(tdd, temp_tdd)
         t_partial = t_fin - t_ini
@@ -1018,12 +1033,12 @@ def contract_with_GTN(path, tns):
     """
 
     # Make the contractions
-    result, t_total = tns[0].cont_GTN(path, False)
+    result, t_total = tns[0].generate_tn().cont_GTN(path, False)
     print(t_total)
     result = result[0].tensor
 
     for i in range(1, len(tns)):
-        temp_result, t_contraction = tns[i].cont_GTN(path, False)
+        temp_result, t_contraction = tns[i].generate_tn().cont_GTN(path, False)
         temp_result = temp_result[0].tensor
         result = temp_result + result
         print(t_contraction)
@@ -1089,7 +1104,7 @@ def contract_with_FTDD(path, tns, indices, n):
     matrix = None
 
     for i in range(len(tns)):
-        tns[i] = PyTN_2_cTN(tns[i])
+        tns[i] = PyTN_2_cTN(tns[i].generate_tn()    )
 
     print("start contractions")
     # Make the contractions
@@ -1153,13 +1168,13 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
 
     # Applying slicing
     tensors_to_slice = []
-    tns = [tn]
+    tns = [SlicedTensorNetwork(tn, [], [])]
     if use_slicing:
-        tns = slicing(tns[0], all_indices_lbl, n=n_indices, n_qubits=n, slicing_method=slicing_method,
+        tns = slicing(tn, all_indices_lbl, n=n_indices, n_qubits=n, slicing_method=slicing_method,
                       tensors_to_slice=tensors_to_slice)
 
     # Calculate the path
-    path = calculate_path(tns[0], contraction_method, tensors_to_slice=tensors_to_slice)
+    path = calculate_path(tn, contraction_method, tensors_to_slice=tensors_to_slice)
 
     tdd = None
     if backend == "PyTDD":
@@ -1171,3 +1186,18 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
 
     return tdd
 
+
+class SlicedTensorNetwork:
+    def __init__(self, tn, indices, values):
+        self.tn = tn
+        self.indices = indices
+        self.values = values
+
+    def generate_tn(self):
+        from copy import deepcopy
+        tn = deepcopy(self.tn)
+        for i in range(len(self.indices)):
+            idx = self.indices[i]
+            value = self.values[i]
+            replace_tensor(value, idx, tn)
+        return tn
