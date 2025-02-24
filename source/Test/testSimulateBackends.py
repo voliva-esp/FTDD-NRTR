@@ -253,3 +253,99 @@ class TestSimulateBackend(unittest.TestCase):
         self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), matrix))
         
     """
+
+    def test_ftdd_simple_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, backend="FTDD")
+        self.assertEqual(creator.get_small_circuit_solution_close_close(), tdd)
+
+    def test_ftdd_simple_small_circuit_close_open(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd))
+
+    def test_ftdd_simple_small_circuit_open_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd))
+
+    def test_ftdd_simple_small_circuit_open_open(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd))
+
+    def test_ftdd_tetris_small_circuit_close_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, backend="FTDD")
+        self.assertEqual(creator.get_small_circuit_solution_close_close(), tdd)
+
+    def test_ftdd_tetris_small_circuit_close_open(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), tdd))
+
+    def test_ftdd_tetris_small_circuit_open_close(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_close(), tdd))
+
+    def test_ftdd_tetris_small_circuit_open_open(self):
+        global creator
+        circuit = create_small_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_open_open(), tdd))
+    """
+    def test_ftdd_simple_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, backend="FTDD")
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd)
+    """
+    def test_ftdd_simple_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd))
+
+    def test_ftdd_simple_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd))
+
+    def test_ftdd_simple_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd))
+
+    def test_ftdd_tetris_medium_circuit_close_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=True, use_tetris=True, backend="FTDD")
+        self.assertEqual(creator.get_medium_circuit_solution_close_close(), tdd)
+
+    def test_ftdd_tetris_medium_circuit_close_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd))
+
+    def test_ftdd_tetris_medium_circuit_open_close(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=True, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_close(), tdd))
+
+    def test_ftdd_tetris_medium_circuit_open_open(self):
+        global creator
+        circuit = create_medium_circuit()
+        tdd = simulate(circuit, is_input_closed=False, is_output_closed=False, use_tetris=True, backend="FTDD")
+        self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_open_open(), tdd))

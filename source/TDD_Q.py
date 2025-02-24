@@ -782,7 +782,7 @@ def get_cotengra_configuration():
     return ctg.HyperOptimizer(
             minimize=f'combo-{56}',
             max_repeats=512,
-            max_time=600,
+            max_time=60,
             progbar=True,
         )
 
@@ -970,7 +970,7 @@ def contract_with_PyTDD(path, tns, indices):
         Returning:
         tdd ------> TDD that contains the result of contracting the tensor network
     """
-    from source.TDD import Ini_TDD, add
+    from source.TDD import Ini_TDD, add, Clear_TDD
     from time import time
 
     # Initialize PyTDD
@@ -986,10 +986,11 @@ def contract_with_PyTDD(path, tns, indices):
     t_total += t_partial
 
     for i in range(1, len(tns)):
+        Clear_TDD()
         t_ini = time()
         temp_tdd = tns[i].cont_TN(path, False)
-        tdd = add(tdd, temp_tdd)
         t_fin = time()
+        tdd = add(tdd, temp_tdd)
         t_partial = t_fin - t_ini
         print(t_partial)
         t_total += t_partial
@@ -1031,6 +1032,89 @@ def contract_with_GTN(path, tns):
     print(f"Time spent: {t_total}")
 
     return result
+
+
+def PyTN_2_cTN(tn_lbl):
+    import source.cpp.build.cTDD as cTDD
+
+    # Create cTDD tensor network
+    cTN = cTDD.TensorNetwork(tn_lbl.tn_type, tn_lbl.qubits_num)
+
+    # Add tensors from PyTDD TN to cTDD TN
+    for ts in tn_lbl.tensors:
+        # Create C++ tensor
+        data = ts.data.flatten()
+        shape = ts.data.shape
+        index_key = [ind.key for ind in ts.index_set]
+        index_idx = [ind.idx for ind in ts.index_set]
+        name = ts.name
+        qubits_list = ts.qubits
+        depth = ts.depth
+        cTensor = cTDD.Tensor(data, list(shape), index_key, index_idx, name, qubits_list, depth)
+        # Add C++ Tensor to C++ TN
+        cTN.add_tensor(cTensor, False)
+
+    return cTN
+
+
+def contract_with_FTDD(path, tns, indices, n):
+    """
+        romOlivo: Makes all the contractions using GTN
+        Input variables:
+        path -----> Contraction path to use
+        tns ------> List of all Tensor Networks to contract (1 if no slicing had been applied)
+        indices --> List of all indices of the Tensor Networks
+        n --------> Number of qubits of the TN
+        Returning:
+        tdd ------> Matrix that contains the result of contracting the tensor network
+    """
+
+    import source.cpp.build.cTDD as cTDD
+    from time import time
+
+    # cTDD Table parameters
+    load_factor = 1
+    alpha = 2
+    beta = alpha * load_factor
+
+    NBUCKET = int(alpha * 2 ** n)
+    INITIAL_GC_LIMIT = int(beta * 2 ** n)
+    INITIAL_GC_LUR = 0.9
+    ACT_NBUCKET = 32768*100
+    CCT_NBUCKET = 32768*100
+    uniqTabConfig = [INITIAL_GC_LIMIT, INITIAL_GC_LUR, NBUCKET, ACT_NBUCKET, CCT_NBUCKET]
+
+    cTDD.Ini_TDD(indices, uniqTabConfig, False)
+
+    matrix = None
+
+    for i in range(len(tns)):
+        tns[i] = PyTN_2_cTN(tns[i])
+
+    print("start contractions")
+    # Make the contractions
+    t_total = 0
+    t_ini = time()
+    tdd = tns[0].cont_TN(path, False)
+    t_fin = time()
+    matrix = tdd.to_array()
+    t_partial = t_fin - t_ini
+    print(t_partial)
+    t_total += t_partial
+
+    for i in range(1, len(tns)):
+        t_ini = time()
+        tdd = tns[i].cont_TN(path, False)
+        t_fin = time()
+        partial_matrix = tdd.to_array()
+        matrix = matrix + partial_matrix
+        t_partial = t_fin - t_ini
+        print(t_partial)
+        t_total += t_partial
+
+    print(f"Time (s): {t_total}")
+
+    return matrix
 
 
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
@@ -1082,6 +1166,8 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         tdd = contract_with_PyTDD(path, tns, all_indices_lbl)
     elif backend == "GTN":
         tdd = contract_with_GTN(path, tns)
+    elif backend == "FTDD":
+        tdd = contract_with_FTDD(path, tns, all_indices_lbl, n)
 
     return tdd
 
