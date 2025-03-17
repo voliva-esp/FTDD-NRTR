@@ -64,6 +64,45 @@ file_name = "qft_entangled_17"
 # indices = ['x0_1', 'x2_1']
 indices = ['x10_2', 'x15_2', 'x6_2']
 
+# file_name = "../MQTbench/qft_entangled/qft_entangled_20"
+# indices = []
+# indices = ['x12_2']
+# indices = ['x17_2', 'x19_2']
+# indices = ['x0_1', 'x1_1', 'x3_1']
+# indices = ['x17_2', 'x18_2', 'x19_2', 'x1_1']
+
+# file_name = "../MQTbench/qft_entangled/qft_entangled_21"
+# indices = []
+# indices = ['x20_2']
+# indices = ['x14_2', 'x17_2']
+# indices = ['x15_2', 'x19_2', 'x20_2']
+# indices = ['x0_1', 'x17_2', 'x18_2', 'x19_2']
+
+# file_name = "../MQTbench/qft_entangled/qft_entangled_29"
+# indices = []
+# indices = ['x5_1']
+# indices = ['x26_2', 'x27_2']
+
+# file_name = "../MQTbench/qft_entangled/qft_entangled_30"
+# indices = []
+# indices = ['x22_2']
+# indices = ['x22_2', 'x7_2']
+# indices = ['x27_2', 'x28_2', 'x29_2']
+# indices = ['x0_1', 'x24_2', 'x26_2', 'x27_2']
+
+# file_name = "../MQTbench/GRQC/inst_4x5_14_8"
+# indices = []
+# indices = ['x17_2']
+# indices = ['x17_2', 'x9_1']
+# indices = ['x17_2', 'x2_1', 'x6_1']
+# indices = ['x12_5', 'x13_1', 'x17_2', 'x9_1']
+
+# file_name = "../MQTbench/GRQC/inst_4x5_20_8"
+# indices = []
+# indices = ['x1_6']
+# indices = ['x0_5', 'x9_3']
+
+
 use_tetris = True
 # tool = "PyTDD"
 tool = "GTN"

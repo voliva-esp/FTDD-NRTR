@@ -9,10 +9,13 @@ Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @ro
 make the code more understandable.
 """
 
-import numpy as np
 from source.TN import Index, Tensor, TensorNetwork, HyperEdgeReduced, contTensor
-from qiskit.quantum_info.operators import Operator
+from source.utils import FileOutputHandler, PrintOutputHandler
 from qiskit.converters import circuit_to_dag, dag_to_circuit
+from qiskit.quantum_info.operators import Operator
+import numpy as np
+
+global handler
 
 
 def is_diagonal(U):
@@ -837,7 +840,7 @@ def get_order_max(tn, n=1):
         Returning:
         indices --> Str name of the indices
     """
-    return ['x10_2', 'x15_2', 'x6_2']
+    # return ['x10_2', 'x15_2', 'x6_2']
     tn.get_index_set()
     count_indices = [(tn.index_count[index], index) for index in tn.index_count.keys()]
     count_indices.sort(reverse=True)
@@ -992,6 +995,8 @@ def contract_with_PyTDD(path, tns, indices):
     from source.TDD import Ini_TDD, add
     from time import time
 
+    global handler
+
     # Initialize PyTDD
     Ini_TDD(indices)
 
@@ -1006,7 +1011,8 @@ def contract_with_PyTDD(path, tns, indices):
     # Calculate time spent and add to total
     t_fin = time()
     t_partial = t_fin-t_ini
-    print(t_partial)
+    if len(tns) > 1:
+        handler.print_time_result(t_partial, 0)
     t_total += t_partial
 
     for i in range(1, len(tns)):
@@ -1019,10 +1025,10 @@ def contract_with_PyTDD(path, tns, indices):
         tdd = add(tdd, temp_tdd)
         # Calculate time spent and add to total
         t_partial = t_fin - t_ini
-        print(t_partial)
+        handler.print_time_result(t_partial, i)
         t_total += t_partial
 
-    print(f"Time (s): {t_total}")
+    handler.print_time_result(t_total)
     """
         This is important because this variable not always is filled correctly. I do not know why but i can fill it
         correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
@@ -1044,19 +1050,22 @@ def contract_with_GTN(path, tns):
         tdd ------> Matrix that contains the result of contracting the tensor network
     """
 
+    global handler
+
     # Make the contractions
     result, t_total = tns[0].generate_tn().cont_GTN(path, False)
-    print(t_total)
+    if len(tns) > 1:
+        handler.print_time_result(t_total, 0)
     result = result[0].tensor
 
     for i in range(1, len(tns)):
         temp_result, t_contraction = tns[i].generate_tn().cont_GTN(path, False)
         temp_result = temp_result[0].tensor
         result = temp_result + result
-        print(t_contraction)
+        handler.print_time_result(t_contraction, i)
         t_total += t_contraction
 
-    print(f"Time spent: {t_total}")
+    handler.print_time_result(t_total)
 
     return result
 
@@ -1118,7 +1127,6 @@ def contract_with_FTDD(path, tns, indices, n):
     for i in range(len(tns)):
         tns[i] = PyTN_2_cTN(tns[i].generate_tn())
 
-    print("start contractions")
     # Make the contractions
     t_total = 0
     t_ini = time()
@@ -1126,7 +1134,8 @@ def contract_with_FTDD(path, tns, indices, n):
     t_fin = time()
     matrix = tdd.to_array()
     t_partial = t_fin - t_ini
-    print(t_partial)
+    if len(tns) > 1:
+        handler.print_time_result(t_partial, 0)
     t_total += t_partial
 
     for i in range(1, len(tns)):
@@ -1136,16 +1145,15 @@ def contract_with_FTDD(path, tns, indices, n):
         partial_matrix = tdd.to_array()
         matrix = matrix + partial_matrix
         t_partial = t_fin - t_ini
-        print(t_partial)
+        handler.print_time_result(t_partial, i)
         t_total += t_partial
 
-    print(f"Time (s): {t_total}")
-
+    handler.print_time_result(t_total)
     return matrix
 
 
 def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False, use_slicing=False,
-             contraction_method='seq', n_indices=1, slicing_method="max", backend="PyTDD"):
+             contraction_method='seq', n_indices=1, slicing_method="max", backend="PyTDD", handler_name="file"):
     """
         romOlivo: This method was added to simplify the simulation process. It will encapsulate all the process
         after the circuit is read as a QuantumCircuit until you get the result of all the contraction.
@@ -1158,9 +1166,17 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         contraction_method -> Name of the contraction method. Can be 'seq', 'cot', 'pair or 'spair'
         n_indices ----------> Number of indices to slice
         slicing_method -----> Slicing method tu use. Can be 'max' or 'cot'
+        handler_name -------> Output handler to use. Can be 'print' or 'file'
         Returning:
         tdd ----------------> TDD that contains the result of contracting the tensor network
     """
+
+    # Init the handler
+    global handler
+    if handler_name == "print":
+        handler = PrintOutputHandler(backend, circuit=cir.name)
+    elif handler_name == "file":
+        handler = FileOutputHandler(backend, circuit=cir.name)
 
     # Read and prepare the circuit
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
@@ -1172,6 +1188,9 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         add_inputs(tn, state, n)
     if is_output_closed:
         add_outputs(tn, state, n)
+
+    # Print init handler
+    handler.print_init(n_indices if use_slicing else 0)
 
     # Preprocess with Tetris
     if use_tetris:
@@ -1194,7 +1213,7 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         tdd = contract_with_GTN(path, tns)
     elif backend == "FTDD":
         tdd = contract_with_FTDD(path, tns, all_indices_lbl, n)
-
+    handler.end_printing()
     return tdd
 
 
