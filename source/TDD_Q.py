@@ -491,6 +491,20 @@ def generate_open_indices(tn):
     return open_indices
 
 
+def generate_close_indices(tn):
+    """
+        romOlivo: This function was added in order to calculate the close indices of a tensor network.
+    """
+    open_indices = []
+    n = tn.qubits_num
+    if tn.is_input_close:
+        open_indices = ['x' + str(i) for i in range(n - 1, -1, -1)]
+    if tn.is_output_close:
+        open_indices = open_indices + ['y' + str(i) for i in range(n - 1, -1, -1)]
+    open_indices = tuple(open_indices)
+    return open_indices
+
+
 """ This function convert TDD tensor network to input format for Cotengra, and considers hyper-edges """
 
 
@@ -524,7 +538,7 @@ def TNtoCotInput(tn_lbl, n=0, prnt=False):
             print('\n')
 
     """
-        romOlivo: This part reworked to actually set the correct indices. If is used the previous version,
+        romOlivo: This part was reworked to actually set the correct indices. If is used the previous version,
         some tests will fail, and the simulation using cotengra might not work (it depends when the output
         indices were closed)
     """
@@ -819,6 +833,9 @@ def calculate_path(p_tnn, method, tensors_to_slice=()):
     if method == 'cot':
         tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
         opt = get_cotengra_configuration()
+        print(f"tensor_list: {tensor_list}")
+        print(f"open_indices: {open_indices}")
+        print(f"size_dict: {size_dict}")
         tree = opt.search(tensor_list, open_indices, size_dict)
         path = tree.get_path()
     elif method == 'pair':
@@ -826,6 +843,17 @@ def calculate_path(p_tnn, method, tensors_to_slice=()):
     elif method == 'spair':
         tensors_to_slice = p_tnn.get_tensors_to_slice()
         path = p_tn.get_smart_pairing_path(tensors_to_slice)
+    elif method == 'k-ops':
+        from DDPathGenerator import PathGenerator, PATH_KOPS
+        tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
+        closed_indices = generate_close_indices(p_tn)
+        print(closed_indices)
+        print("---------------")
+        print(tensor_list)
+        print("---------------")
+        pg = PathGenerator(tensor_list, closed_indices)
+        path = pg.generate_path(PATH_KOPS)
+        print(path)
     else:
         path = p_tn.get_seq_path()
     return path

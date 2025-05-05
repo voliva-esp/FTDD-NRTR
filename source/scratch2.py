@@ -1,5 +1,5 @@
 from source.TDD_Q import simulate, cir_2_tn_lbl, get_real_qubit_num, add_outputs, add_inputs, apply_full_tetris, \
-    calculate_path
+    calculate_path, SlicedTensorNetwork
 from qiskit import QuantumCircuit
 from copy import deepcopy
 from source.TDD import Ini_TDD, add
@@ -8,7 +8,7 @@ from time import time
 path = './../Benchmarks/Verification/'
 # file_names = ["3_17_13", "3_17_13_2", "ex-1_166", "qft_15", "qft_16"]
 # file_names = ["3_17_13", "3_17_13_2"]
-file_names = ["qft_15"]
+file_names = ["test"]
 
 # path = './../Benchmarks/MQTbench/'
 # file_names = ["GRQC/inst_4x4_10_8", "GRQC/inst_4x4_12_8", "GRQC/inst_4x5_10_8", "GRQC/inst_4x5_14_8",
@@ -47,10 +47,9 @@ for i in range(N):
 
     tn = deepcopy(tn_original)
     add_outputs(tn, output_state, n)
-    tn = apply_full_tetris(tn, depth)
 
     # Calculate the path
-    path = calculate_path(tn, "seq")
+    path = calculate_path(SlicedTensorNetwork(tn, [], []), "cot")
 
     t_ini = time()
     # Make the contractions

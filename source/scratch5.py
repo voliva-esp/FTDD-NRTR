@@ -64,7 +64,7 @@ file_name = "qft_entangled_17"
 # indices = ['x0_1', 'x2_1']
 indices = ['x10_2', 'x15_2', 'x6_2']
 
-# file_name = "../MQTbench/qft_entangled/qft_entangled_20"
+file_name = "../MQTbench/qft_entangled/qft_entangled_20"
 # indices = []
 # indices = ['x12_2']
 # indices = ['x17_2', 'x19_2']
@@ -82,6 +82,14 @@ indices = ['x10_2', 'x15_2', 'x6_2']
 # indices = []
 # indices = ['x5_1']
 # indices = ['x26_2', 'x27_2']
+# indices = ['x26_2', 'x27_2', 'x28_2']
+# indices = ['x14_2', 'x26_2', 'x27_2', 'x28_2']
+arr_indices = [
+    ['x5_1'],
+    ['x26_2', 'x27_2'],
+    ['x26_2', 'x27_2', 'x28_2'],
+    ['x14_2', 'x26_2', 'x27_2', 'x28_2'],
+]
 
 # file_name = "../MQTbench/qft_entangled/qft_entangled_30"
 # indices = []
@@ -101,13 +109,35 @@ indices = ['x10_2', 'x15_2', 'x6_2']
 # indices = []
 # indices = ['x1_6']
 # indices = ['x0_5', 'x9_3']
+# indices = ['x24_2', 'x25_2', 'x28_2']
+# indices = ['x26_2', 'x27_2', 'x28_2', 'x29_2']
+arr_indices = [
+    ['x1_6'],
+    ['x0_5', 'x9_3'],
+    ['x24_2', 'x25_2', 'x28_2'],
+    ['x26_2', 'x27_2', 'x28_2', 'x29_2'],
+]
 
+# file_name = "../MQTbench/vqe/vqe_indep_qiskit_19"
+indices = []
+# indices = ['x7_1']
+# indices = ['x9_1', 'x9_3']
+# indices = ['x5_1', 'x9_1', 'x9_3']
+# indices = ['x11_1', 'x5_1', 'x7_1', 'x8_3']
+arr_indices = [
+    ['x7_1'],
+    ['x9_1', 'x9_3'],
+    ['x5_1', 'x9_1', 'x9_3'],
+    ['x11_1', 'x5_1', 'x7_1', 'x8_3'],
+]
 
-use_tetris = True
-# tool = "PyTDD"
-tool = "GTN"
-method = "seq"
+use_tetris = False
+tool = "PyTDD"
+# tool = "GTN"
+# tool = "FTDD"
+# method = "seq"
 # method = "spair"
+method = "k-ops"
 iteration = 4
 
 print(f" ----- {file_name} -----")
