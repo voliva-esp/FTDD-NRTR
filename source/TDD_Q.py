@@ -833,9 +833,6 @@ def calculate_path(p_tnn, method, tensors_to_slice=()):
     if method == 'cot':
         tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
         opt = get_cotengra_configuration()
-        print(f"tensor_list: {tensor_list}")
-        print(f"open_indices: {open_indices}")
-        print(f"size_dict: {size_dict}")
         tree = opt.search(tensor_list, open_indices, size_dict)
         path = tree.get_path()
     elif method == 'pair':
@@ -847,13 +844,8 @@ def calculate_path(p_tnn, method, tensors_to_slice=()):
         from DDPathGenerator import PathGenerator, PATH_KOPS
         tensor_list, open_indices, size_dict, arrays, oe_input = TNtoCotInput(p_tn, n)
         closed_indices = generate_close_indices(p_tn)
-        print(closed_indices)
-        print("---------------")
-        print(tensor_list)
-        print("---------------")
         pg = PathGenerator(tensor_list, closed_indices)
         path = pg.generate_path(PATH_KOPS)
-        print(path)
     else:
         path = p_tn.get_seq_path()
     return path
@@ -1202,9 +1194,9 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
     # Init the handler
     global handler
     if handler_name == "print":
-        handler = PrintOutputHandler(backend, circuit=cir.name)
+        handler = PrintOutputHandler(backend, circuit=cir, cont_method=contraction_method)
     elif handler_name == "file":
-        handler = FileOutputHandler(backend, circuit=cir.name)
+        handler = FileOutputHandler(backend, circuit=cir, cont_method=contraction_method)
 
     # Read and prepare the circuit
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
