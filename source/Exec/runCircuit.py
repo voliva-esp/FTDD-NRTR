@@ -39,15 +39,18 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) < 6:
         raise ValueError("Incorrect usage of runCircuit file. \n Correct usage: \n   $ python runCircuit.py " +
-                         "<min_n_qubits> <max_n_qubits> <contraction_method> <folder_name> <circuit_name>" +
+                         "<min_n_qubits> <max_n_qubits> <contraction_method> <folder_name> <circuit_name> (<tool>)" +
                          "  These are the arguments you used: \n  " + str(sys.argv))
     min_qubits = int(sys.argv[1])
     max_qubits = int(sys.argv[2])
     contraction_method = sys.argv[3]
     folder_name = sys.argv[4]
     circuit_name = sys.argv[5]
+    tool = "PyTDD"
+    if len(sys.argv) == 7:
+        tool = sys.argv[6]
     cgr = CircuitGroupRun(path=f"./Benchmarks/MQTbench/{folder_name}/", circuit_name=circuit_name,
-                          contraction_method=contraction_method)
+                          contraction_method=contraction_method, backend=tool)
     cgr.run(min_qubits, max_qubits)
 
 
