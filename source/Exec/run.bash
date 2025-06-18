@@ -1,9 +1,9 @@
 #!/bin/bash
-tools=('PyTDD' 'GTN' 'FTDD')
-paths=('qft_entangled' 'qaoa' 'ghz')
-circuit=('qft_entangled' 'qaoa_indep_qiskit' 'ghz')
-minQubits=(12 14 30)
-maxQubits=(16 15 31)
+tools=('GTN' 'FTDD')
+paths=('qft_indep' 'rqc' 'ghz')
+circuit=('qftentangled_indep_qiskit' 'rqc' 'ghz')
+minQubits=(2 1 5)
+maxQubits=(3 12 6)
 echo "Starting all executions..."
 for (( j=0; j<${#tools[@]}; j++))
 do

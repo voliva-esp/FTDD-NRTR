@@ -65,6 +65,25 @@ public:
         }
     }
 
+    void print_size_table() {
+        int max_length = 0;
+        int n_buckets = 0;
+        for (auto& bucket: tables) { // a bucket in the table
+            int partial_length = 0;
+            n_buckets++;
+            // Release bucket
+            Node* current = bucket;
+            while (current) {
+                current = current->next;
+                partial_length++;
+            }
+            if (partial_length > max_length) {
+                max_length = partial_length;
+            }
+        }
+        std::cout << "Número de buckets: " << n_buckets << "\nMax length buckets: " << max_length << "\n";
+    }
+
     // Clear everything
     void clear() {
         // clear unique table buckets

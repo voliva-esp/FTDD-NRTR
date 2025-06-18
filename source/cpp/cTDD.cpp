@@ -281,6 +281,8 @@ TDD TensorNetwork::cont_TN(py::tuple path, bool debug) {
 
     }
 
+
+
     if (tdd_list.size() != 1) { throw std::runtime_error("In TensorNetwork.cont_TN: TDD list size is not one after all contractions!\n"); }
     return tdd_list[0];
 }
