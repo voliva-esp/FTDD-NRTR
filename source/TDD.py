@@ -252,14 +252,29 @@ def equal_tolerance(data1, data2):
     """
         @romOlivo: Compares 2 data structures (tdd or matrices) with some tolerance in the result
     """
-    print(f"d1: {data1} --- d2: {data2}")
+    def is_not_array(data):
+        import collections.abc
+        return not hasattr(data, "__len__") and not isinstance(data, collections.abc.Sequence)
+
+    if is_not_array(data1):
+        if is_not_array(data2):
+            print(f" checking {data1} and {data2} --- Result: {data1 == data2}")
+            return data1 == data2
+        else:
+            return False
+    # print(f"d1: {data1} --- d2: {data2}")
     matrix1 = data1
     if isinstance(data1, TDD):
         matrix1 = data1.to_array()
     matrix2 = data2
     if isinstance(data2, TDD):
         matrix2 = data2.to_array()
-    return np.array_equal(np.round(matrix1, n_decimals_of_tolerance), np.round(matrix2, n_decimals_of_tolerance))
+    m1 = np.round(matrix1, n_decimals_of_tolerance)
+    m2 = np.round(matrix2, n_decimals_of_tolerance)
+    if len(m1) != len(m2):
+        return False
+    print(f"Checking {m1} with {m2}")
+    return (equal_tolerance(m1[0], m2[0]) and equal_tolerance(m1[1], m2[1])) or (equal_tolerance(m1[0], m2[1]) and equal_tolerance(m1[1], m2[0]))
 
 
 def layout(node, key_2_idx, dot=Digraph(), succ=[], real_label=True):

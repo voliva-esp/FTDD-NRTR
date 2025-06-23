@@ -14,3 +14,14 @@
 /BenchQMDD/log/*.log
 /TestFTDD/log/*.log
 /TestFTDD/cotengra_cache/*
+/source/Exec/source
+/source/scratch.py
+/source/scratch2.py
+/source/scratch3.py
+/source/scratch4.py
+/source/scratch5.py
+/source/TestFTDD
+/source/output
+/source/cpp
+/venv
+setup.py

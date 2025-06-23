@@ -975,7 +975,7 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None, tensors_to_
 
     from copy import deepcopy
     indices_to_slice = get_sliced_indices(tn, n, slicing_method, n_qubits=n_qubits)
-    print(indices_to_slice)
+    # print(indices_to_slice)
     # tns = [deepcopy(tn)]
     tns = []
     all_tensors = set()
