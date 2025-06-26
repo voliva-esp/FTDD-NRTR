@@ -25,3 +25,5 @@
 /source/cpp
 /venv
 setup.py
+/source/Test/.pytest_cache/
+/source/Test/source/
