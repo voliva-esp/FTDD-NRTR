@@ -3,6 +3,46 @@
 """
 
 
+def generate_ftdd_data():
+    """
+        romOlivo: This method gets and process all the metrics from the cTDD (FTDD) package. Used for a simple way
+                  to analyze and check all the metrics.
+    """
+    import source.cpp.build.cTDD as cTDD
+    # Unique Table Metrics
+    unique_hits = int(cTDD.get_count().split("\n")[0].split(" / ")[0].split("node: ")[1])
+    unique_calls = int(cTDD.get_count().split("\n")[0].split(" / ")[1])
+    unique_hit_ratio = float(cTDD.get_count().split("\n")[0].split(" / ")[2])
+    # Addition Computed Table Metrics
+    add_hits = int(cTDD.get_count().split("\n")[1].split(" / ")[0].split("add: ")[1])
+    add_calls = int(cTDD.get_count().split("\n")[1].split(" / ")[1])
+    add_hit_ratio = float(cTDD.get_count().split("\n")[1].split(" / ")[2])
+    add_collisions = int(cTDD.get_count().split("\n")[1].split(" / ")[3])
+    # Contraction Computed Table Metrics
+    cont_hits = int(cTDD.get_count().split("\n")[2].split(" / ")[0].split("cont: ")[1])
+    cont_calls = int(cTDD.get_count().split("\n")[2].split(" / ")[1])
+    cont_hit_ratio = float(cTDD.get_count().split("\n")[2].split(" / ")[2])
+    cont_collisions = int(cTDD.get_count().split("\n")[2].split(" / ")[3])
+    # Other characteristics
+    gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
+    n_nodes_final = int(cTDD.get_count().split("\n")[3].split(": ")[1].split(', ')[0])
+    return {
+        "gc": gc,
+        "add_hits": add_hits,
+        "cont_hits": cont_hits,
+        "add_calls": add_calls,
+        "cont_calls": cont_calls,
+        "unique_hits": unique_hits,
+        "unique_calls": unique_calls,
+        "n_nodes_final": n_nodes_final,
+        "add_hit_ratio": add_hit_ratio,
+        "add_collisions": add_collisions,
+        "cont_hit_ratio": cont_hit_ratio,
+        "cont_collisions": cont_collisions,
+        "unique_hit_ratio": unique_hit_ratio,
+    }
+
+
 class OutputHandler:
     """
         romOlivo: This class was added with the objective to help handler all the information of the simulation

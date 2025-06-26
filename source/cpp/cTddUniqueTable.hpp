@@ -5,6 +5,9 @@
  * Modifications by Qirui Zhang (qiruizh@umich.edu) for FTDD (https://github.com/QiruiZhang/FTDD)
  *   - Adapted for TDD
  *   - Changed hash function to FNV
+ *
+ * Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @romOlivo.
+ *   - Using 'available' nodes when it is possible.
  */
 
 
@@ -190,6 +193,7 @@ public:
         } else { // if node not found
             // Get a new node
             Node* res;
+            // romOlivo: This part was modified, so now available nodes can be used when it is possible.
             if (available != nullptr) {
                 res = available;
                 available = available->next;

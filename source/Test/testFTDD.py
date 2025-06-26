@@ -4,9 +4,10 @@
 
 """
 
-from source.Test.creatorCircuitQasmStr import CircuitCreator
-from source.TDD import equal_tolerance
 from source.TDD_Q import PyTN_2_cTN, cir_2_tn_lbl, get_real_qubit_num, add_inputs
+from source.Test.creatorCircuitQasmStr import CircuitCreator
+from source.utils import generate_ftdd_data
+from source.TDD import equal_tolerance
 import source.cpp.build.cTDD as cTDD
 from qiskit import QuantumCircuit
 import unittest
@@ -48,6 +49,9 @@ def create_tricky_circuit():
 
 
 def adapt_tdd_result(tdd):
+    """
+        Adapts the result of the cTDD, so they have the same format as the other tools.
+    """
     if len(tdd) == 2:
         return [tdd[0], tdd[1]]
     i_mid = len(tdd) // 2
@@ -55,6 +59,9 @@ def adapt_tdd_result(tdd):
 
 
 def make_sim(cir, uniq_config, path):
+    """
+        Makes one simulation close - open with cTDD
+    """
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
     n = get_real_qubit_num(cir)
     state = [0] * n
@@ -67,6 +74,9 @@ def make_sim(cir, uniq_config, path):
 
 
 def generate_path(n_qubits, block_gates, mid_gates):
+    """
+        Calculates a special path for the 'tricky' circuit for being more able to detect errors with the Compute Table.
+    """
     path = [(n_qubits, n_qubits + 1)]
     i = 1
     while i < block_gates + mid_gates - 1:
@@ -108,7 +118,6 @@ class TestFTDD(unittest.TestCase):
         uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
         path = generate_path(n_qubits=3, block_gates=6, mid_gates=4)
         result = make_sim(cir, uniqTabConfig, path)
-        print(result)
         self.assertTrue(equal_tolerance(creator.get_tricky_circuit_solution_close_open(), result))
 
     def test_always_gc_small_close_open(self):
@@ -121,8 +130,8 @@ class TestFTDD(unittest.TestCase):
         uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
         path = ((0, 1), (0, 1), (0, 1), (0, 1), (0, 1))
         result = make_sim(cir, uniqTabConfig, path)
-        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
-        self.assertTrue(4, gc)
+        data = generate_ftdd_data()
+        self.assertEqual(4, data['gc'])
         self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), result))
 
     def test_always_gc_tricky_close_open(self):
@@ -135,10 +144,8 @@ class TestFTDD(unittest.TestCase):
         uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
         path = generate_path(n_qubits=3, block_gates=6, mid_gates=4)
         result = make_sim(cir, uniqTabConfig, path)
-        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
-        print(cTDD.get_count())
-        print(gc)
-        print(result)
+        data = generate_ftdd_data()
+        self.assertEqual(17, data['gc'])
         self.assertTrue(equal_tolerance(creator.get_tricky_circuit_solution_close_open(), result))
 
     def test_always_collide_small_close_open(self):
@@ -151,8 +158,9 @@ class TestFTDD(unittest.TestCase):
         uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
         path = ((0, 1), (0, 1), (0, 1), (0, 1), (0, 1))
         result = make_sim(cir, uniqTabConfig, path)
-        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
-        self.assertTrue(4, gc)
+        data = generate_ftdd_data()
+        self.assertEqual(4, data['gc'])
+        self.assertTrue(0 < data['cont_collisions'])
         self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), result))
 
     def test_always_collide_tricky_close_open(self):
@@ -165,8 +173,7 @@ class TestFTDD(unittest.TestCase):
         uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
         path = generate_path(n_qubits=3, block_gates=6, mid_gates=4)
         result = make_sim(cir, uniqTabConfig, path)
-        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
-        print(cTDD.get_count())
-        print(gc)
-        print(result)
+        data = generate_ftdd_data()
+        self.assertEqual(17, data['gc'])
+        self.assertTrue(0 < data['cont_collisions'])
         self.assertTrue(equal_tolerance(creator.get_tricky_circuit_solution_close_open(), result))
