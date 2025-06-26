@@ -339,8 +339,6 @@ class TestSimulateBackend(unittest.TestCase):
         circuit = create_medium_circuit()
         tdd = simulate(circuit, is_input_closed=True, is_output_closed=False, backend="FTDD")
         tdd_adapted = adapt_tdd_result(tdd)
-        print(tdd_adapted)
-        print(creator.get_medium_circuit_solution_close_open())
         self.assertTrue(equal_tolerance(creator.get_medium_circuit_solution_close_open(), tdd_adapted))
 
     def test_ftdd_simple_medium_circuit_open_close(self):

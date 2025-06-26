@@ -206,3 +206,38 @@ class CircuitCreator:
 
         return result
 
+    def create_tricky_circuit(self):
+        self.init_circuit(3)
+        # Block
+        self.add_gate('h', [0])
+        self.add_gate('h', [1])
+        self.add_gate('cx', [0, 2])
+        self.add_gate('cx', [1, 2])
+        self.add_gate('x', [0])
+        self.add_gate('x', [1])
+        # Mid
+        self.add_gate('cx', [0, 1])
+        self.add_gate('z', [2])
+        self.add_gate('cx', [2, 1])
+        self.add_gate('cx', [2, 0])
+        # Block
+        self.add_gate('h', [0])
+        self.add_gate('h', [1])
+        self.add_gate('cx', [0, 2])
+        self.add_gate('cx', [1, 2])
+        self.add_gate('x', [0])
+        self.add_gate('x', [1])
+        return self.circuit
+
+    def get_tricky_circuit_solution_open_open(self):
+        pass
+
+    def get_tricky_circuit_solution_open_close(self):
+        pass
+
+    def get_tricky_circuit_solution_close_open(self):
+        result = [[[0, 0], [0, 0]], [[-0.5, 0.5], [0.5, -0.5]]]
+        return result
+
+    def get_tricky_circuit_solution_close_close(self):
+        pass

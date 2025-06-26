@@ -258,7 +258,7 @@ def equal_tolerance(data1, data2):
 
     if is_not_array(data1):
         if is_not_array(data2):
-            print(f" checking {data1} and {data2} --- Result: {data1 == data2}")
+            # print(f" checking {data1} and {data2} --- Result: {data1 == data2}")
             return data1 == data2
         else:
             return False
@@ -273,7 +273,7 @@ def equal_tolerance(data1, data2):
     m2 = np.round(matrix2, n_decimals_of_tolerance)
     if len(m1) != len(m2):
         return False
-    print(f"Checking {m1} with {m2}")
+    # print(f"Checking {m1} with {m2}")
     return (equal_tolerance(m1[0], m2[0]) and equal_tolerance(m1[1], m2[1])) or (equal_tolerance(m1[0], m2[1]) and equal_tolerance(m1[1], m2[0]))
 
 

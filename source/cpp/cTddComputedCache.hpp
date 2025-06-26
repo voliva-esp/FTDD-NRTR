@@ -12,6 +12,7 @@
 #define CTDDCOMPUTEDTABLE_HPP
 
 #include "cTDD.hpp"
+#include "cTddUniqueTable.hpp"
 
 
 /*
@@ -82,6 +83,9 @@ public:
     void insert(const Edge& edge1, const Edge& edge2, const Edge& res) {
         std::size_t hashVal = hash(edge1, edge2);
         table[hashVal]     = {edge1, edge2, res};
+        unique_table.incr_ref_count(edge1);
+        unique_table.incr_ref_count(edge2);
+        unique_table.incr_ref_count(res);
     }
 
     // Find an entry in the computed cache

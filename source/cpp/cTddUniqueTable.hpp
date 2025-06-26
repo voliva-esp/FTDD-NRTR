@@ -189,7 +189,14 @@ public:
             return find_node;
         } else { // if node not found
             // Get a new node
-            Node* res = new Node();
+            Node* res;
+            if (available != nullptr) {
+                res = available;
+                available = available->next;
+                res->next = nullptr;
+            } else {
+                res = new Node();
+            }
             res->key = v;
             res->edges = edges;
             res->refCnt = 0;
