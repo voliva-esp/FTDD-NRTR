@@ -136,6 +136,37 @@ class TestFTDD(unittest.TestCase):
         path = generate_path(n_qubits=3, block_gates=6, mid_gates=4)
         result = make_sim(cir, uniqTabConfig, path)
         gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
+        print(cTDD.get_count())
+        print(gc)
+        print(result)
+        self.assertTrue(equal_tolerance(creator.get_tricky_circuit_solution_close_open(), result))
+
+    def test_always_collide_small_close_open(self):
+        cir = create_small_circuit()
+        n_bucket = 32000
+        initial_gc_limit = 0
+        initial_gc_lur = 0
+        act_bucket = 1
+        cct_bucket = 1
+        uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
+        path = ((0, 1), (0, 1), (0, 1), (0, 1), (0, 1))
+        result = make_sim(cir, uniqTabConfig, path)
+        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
+        self.assertTrue(4, gc)
+        self.assertTrue(equal_tolerance(creator.get_small_circuit_solution_close_open(), result))
+
+    def test_always_collide_tricky_close_open(self):
+        cir = create_tricky_circuit()
+        n_bucket = 32000
+        initial_gc_limit = 0
+        initial_gc_lur = 0
+        act_bucket = 1
+        cct_bucket = 1
+        uniqTabConfig = [initial_gc_limit, initial_gc_lur, n_bucket, act_bucket, cct_bucket]
+        path = generate_path(n_qubits=3, block_gates=6, mid_gates=4)
+        result = make_sim(cir, uniqTabConfig, path)
+        gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
+        print(cTDD.get_count())
         print(gc)
         print(result)
         self.assertTrue(equal_tolerance(creator.get_tricky_circuit_solution_close_open(), result))

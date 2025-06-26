@@ -312,8 +312,8 @@ int get_gc_runs(){
 std::string get_count() {
     std::ostringstream ss;    
     ss << "node: " << unique_table.getHit() << " / " << unique_table.getLookups() << " / " << unique_table.hitRatio() << "\n";
-    ss << "add: " << add_computed_table.getHit() << " / " << add_computed_table.getLookups() << " / " << add_computed_table.hitRatio() << "\n";
-    ss << "cont: " << cont_computed_table.getHit() << " / " << cont_computed_table.getLookups() << " / " << cont_computed_table.hitRatio() << "\n";
+    ss << "add: " << add_computed_table.getHit() << " / " << add_computed_table.getLookups() << " / " << add_computed_table.hitRatio() << " / " << add_computed_table.getCollisions() << "\n";
+    ss << "cont: " << cont_computed_table.getHit() << " / " << cont_computed_table.getLookups() << " / " << cont_computed_table.hitRatio() << " / " << cont_computed_table.getCollisions() << "\n";
     ss << "Final number of nodes: " << get_unique_table_num() - 1 << ", Number of garbage collection runs: " << unique_table.getGcruns();
     return ss.str();
 }

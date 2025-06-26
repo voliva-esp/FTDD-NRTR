@@ -46,6 +46,7 @@ public:
     [[nodiscard]] std::size_t   getCount() const        { return NBUCKET; }
     [[nodiscard]] std::size_t   getHit() const          { return hits; }
     [[nodiscard]] std::size_t   getLookups() const      { return lookups; }
+    [[nodiscard]] std::size_t   getCollisions() const   { return collisions; }
     [[nodiscard]] dataType      hitRatio() const        { return static_cast<dataType>(hits) / static_cast<dataType>(lookups); }
 
 
@@ -82,6 +83,12 @@ public:
     // Insert an entry to the computed cache
     void insert(const Edge& edge1, const Edge& edge2, const Edge& res) {
         std::size_t hashVal = hash(edge1, edge2);
+        if (table[hashVal].res.node != nullptr) {
+            unique_table.decr_ref_count(table[hashVal].edge1);
+            unique_table.decr_ref_count(table[hashVal].edge2);
+            unique_table.decr_ref_count(table[hashVal].res);
+            collisions++;
+        }
         table[hashVal]     = {edge1, edge2, res};
         unique_table.incr_ref_count(edge1);
         unique_table.incr_ref_count(edge2);
@@ -127,6 +134,7 @@ private:
     // lookup statistics
     std::size_t hits    = 0;
     std::size_t lookups = 0;
+    std::size_t collisions = 0;
 };
 
 
@@ -161,6 +169,7 @@ public:
     [[nodiscard]] std::size_t   getCount() const        { return NBUCKET; }
     [[nodiscard]] std::size_t   getHit() const          { return hits; }
     [[nodiscard]] std::size_t   getLookups() const      { return lookups; }
+    [[nodiscard]] std::size_t   getCollisions() const   { return collisions; }
     [[nodiscard]] dataType      hitRatio() const        { return static_cast<dataType>(hits) / static_cast<dataType>(lookups); }
 
 
@@ -195,7 +204,21 @@ public:
     // Insert an entry to the computed cache
     void insert(Node* node1, Node* node2, const std::vector<keyType>& key_2_new_key_1, const std::vector<keyType>& key_2_new_key_2, const Edge& res) {
         std::size_t hashVal = hash(node1, node2, key_2_new_key_1, key_2_new_key_2);
+        Edge temp;
+        if (table[hashVal].res.node != nullptr) {
+            temp.node = table[hashVal].node1;
+            unique_table.decr_ref_count(temp);
+            temp.node = table[hashVal].node2;
+            unique_table.decr_ref_count(temp);
+            unique_table.decr_ref_count(table[hashVal].res);
+            collisions++;
+        }
         table[hashVal]     = {node1, node2, key_2_new_key_1, key_2_new_key_2, res};
+        temp.node = table[hashVal].node1;
+        unique_table.incr_ref_count(temp);
+        temp.node = table[hashVal].node2;
+        unique_table.incr_ref_count(temp);
+        unique_table.incr_ref_count(res);
     }
 
     // Find an entry in the computed cache
@@ -239,6 +262,7 @@ private:
     // lookup statistics
     std::size_t hits    = 0;
     std::size_t lookups = 0;
+    std::size_t collisions = 0;
 };
 
 
