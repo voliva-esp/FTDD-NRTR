@@ -5,10 +5,10 @@ tools=('FTDD')
 #minQubits=(10 1 20 5 5 3 2 2 2 2)
 #maxQubits=(129 25 129 50 50 15 130 130 130 17)
 methods=('seq')
-paths=('qft_indep' 'rqc' 'ghz')
-circuit=('qftentangled_indep_qiskit' 'rqc' 'ghz')
-minQubits=(10 1 20)
-maxQubits=(12 2 22)
+paths=('qft_indep' 'rqc' 'ghz' 'qwalk' 'qpe')
+circuit=('qftentangled_indep_qiskit' 'rqc' 'ghz' 'qwalk_d1' 'qpeexact_indep_qiskit')
+minQubits=(20 1 40 3 2)
+maxQubits=(120 10 120 15 60)
 echo "Starting all executions..."
 for (( j=0; j<${#tools[@]}; j++))
 do
@@ -22,7 +22,7 @@ do
         for (( n=${minQubits[i]}; n<${maxQubits[i]}+1; n++))
         do
           echo " >>> ## --- N: $n"
-          timeout 10 python3 source/Exec/runCircuit.py ${n} ${methods[l]} ${paths[i]} ${circuit[i]} ${tools[j]}
+          timeout 3600 python3 source/Exec/runCircuit.py ${n} ${methods[l]} ${paths[i]} ${circuit[i]} ${tools[j]}
           exit_code=$?
           if [ "$exit_code" -ne 0 ]; then
             if [ "$exit_code" -eq 124 ]; then
