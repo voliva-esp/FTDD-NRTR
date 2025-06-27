@@ -9,8 +9,8 @@ Modified by Vicente Lopez (voliva@uji.es). Modifications will be marked with @ro
 make the code more understandable.
 """
 
+from source.utils import FileOutputHandler, PrintOutputHandler, HybridOutputHandler
 from source.TN import Index, Tensor, TensorNetwork, HyperEdgeReduced, contTensor
-from source.utils import FileOutputHandler, PrintOutputHandler
 from qiskit.converters import circuit_to_dag, dag_to_circuit
 from qiskit.quantum_info.operators import Operator
 import numpy as np
@@ -1002,6 +1002,15 @@ def slicing(tn, all_index, n=1, slicing_method='max', n_qubits=None, tensors_to_
     return tns
 
 
+def get_total_memory_used_mb():
+    """
+        romOlivo: Returns the RAM used in Kbs.
+    """
+    import psutil
+    mem = psutil.virtual_memory()
+    return mem.used / 1024
+
+
 def contract_with_PyTDD(path, tns, indices):
     """
         romOlivo: Makes all the contractions using PyTDD
@@ -1016,6 +1025,7 @@ def contract_with_PyTDD(path, tns, indices):
     from time import time
 
     global handler
+    memory_no_init = get_total_memory_used_mb()
 
     # Initialize PyTDD
     Ini_TDD(indices)
@@ -1023,6 +1033,7 @@ def contract_with_PyTDD(path, tns, indices):
     # Start timer
     ttn = tns[0].generate_tn()
     t_total = 0
+    first_memory = get_total_memory_used_mb()
     t_ini = time()
 
     # Make the contractions
@@ -1031,13 +1042,19 @@ def contract_with_PyTDD(path, tns, indices):
     # Calculate time spent and add to total
     t_fin = time()
     t_partial = t_fin-t_ini
+    other_data = {
+        "memory_no_init": memory_no_init,
+        "memory_after": first_memory,
+        "memory_before": get_total_memory_used_mb(),
+    }
     if len(tns) > 1:
-        handler.print_time_result(t_partial, 0)
+        handler.print_time_result(t_partial, 0, other_data=other_data)
     t_total += t_partial
 
     for i in range(1, len(tns)):
         ttn = tns[i].generate_tn()
         # Start timer
+        memory_after = get_total_memory_used_mb()
         t_ini = time()
         # Make the contractions
         temp_tdd = ttn.cont_TN(path, False)
@@ -1045,10 +1062,19 @@ def contract_with_PyTDD(path, tns, indices):
         tdd = add(tdd, temp_tdd)
         # Calculate time spent and add to total
         t_partial = t_fin - t_ini
-        handler.print_time_result(t_partial, i)
+        other_data = {
+            "memory_no_init": memory_no_init,
+            "memory_after": memory_after,
+            "memory_before": get_total_memory_used_mb(),
+        }
+        handler.print_time_result(t_partial, i, other_data=other_data)
         t_total += t_partial
-
-    handler.print_time_result(t_total)
+    other_data = {
+        "memory_no_init": memory_no_init,
+        "memory_after": first_memory,
+        "memory_before": get_total_memory_used_mb(),
+    }
+    handler.print_time_result(t_total, other_data=other_data)
     """
         This is important because this variable not always is filled correctly. I do not know why but i can fill it
         correctly, so i set it myself. If you remove it, some simulations will not work properly, in the sense that
@@ -1071,21 +1097,38 @@ def contract_with_GTN(path, tns):
     """
 
     global handler
+    memory_no_init = get_total_memory_used_mb()
 
     # Make the contractions
+    first_memory = get_total_memory_used_mb()
     result, t_total = tns[0].generate_tn().cont_GTN(path, False)
+    other_data = {
+        "memory_no_init": memory_no_init,
+        "memory_after": first_memory,
+        "memory_before": get_total_memory_used_mb(),
+    }
     if len(tns) > 1:
-        handler.print_time_result(t_total, 0)
+        handler.print_time_result(t_total, 0, other_data=other_data)
     result = result[0].tensor
 
     for i in range(1, len(tns)):
+        memory_after = get_total_memory_used_mb()
         temp_result, t_contraction = tns[i].generate_tn().cont_GTN(path, False)
         temp_result = temp_result[0].tensor
         result = temp_result + result
-        handler.print_time_result(t_contraction, i)
+        other_data = {
+            "memory_no_init": memory_no_init,
+            "memory_after": memory_after,
+            "memory_before": get_total_memory_used_mb(),
+        }
+        handler.print_time_result(t_contraction, i, other_data=other_data)
         t_total += t_contraction
-
-    handler.print_time_result(t_total)
+    other_data = {
+        "memory_no_init": memory_no_init,
+        "memory_after": first_memory,
+        "memory_before": get_total_memory_used_mb(),
+    }
+    handler.print_time_result(t_total, other_data=other_data)
 
     return result
 
@@ -1128,6 +1171,8 @@ def contract_with_FTDD(path, tns, indices, n):
     import source.cpp.build.cTDD as cTDD
     from time import time
 
+    memory_no_init = get_total_memory_used_mb()
+
     # cTDD Table parameters
     load_factor = 1
     alpha = 2
@@ -1149,26 +1194,42 @@ def contract_with_FTDD(path, tns, indices, n):
 
     # Make the contractions
     t_total = 0
+    first_memory = get_total_memory_used_mb()
     t_ini = time()
     tdd = tns[0].cont_TN(path, False)
     t_fin = time()
     matrix = tdd.to_array()
     t_partial = t_fin - t_ini
     if len(tns) > 1:
-        handler.print_time_result(t_partial, 0)
+        other_data = {
+            "memory_no_init": memory_no_init,
+            "memory_after": first_memory,
+            "memory_before": get_total_memory_used_mb(),
+        }
+        handler.print_time_result(t_partial, 0, other_data=other_data)
     t_total += t_partial
 
     for i in range(1, len(tns)):
+        memory_after = get_total_memory_used_mb()
         t_ini = time()
         tdd = tns[i].cont_TN(path, False)
         t_fin = time()
         partial_matrix = tdd.to_array()
         matrix = matrix + partial_matrix
         t_partial = t_fin - t_ini
-        handler.print_time_result(t_partial, i)
+        other_data = {
+            "memory_no_init": memory_no_init,
+            "memory_after": memory_after,
+            "memory_before": get_total_memory_used_mb(),
+        }
+        handler.print_time_result(t_partial, i, other_data=other_data)
         t_total += t_partial
-
-    handler.print_time_result(t_total)
+    other_data = {
+        "memory_no_init": memory_no_init,
+        "memory_after": first_memory,
+        "memory_before": get_total_memory_used_mb(),
+    }
+    handler.print_time_result(t_total, other_data=other_data)
     return matrix
 
 
@@ -1197,6 +1258,8 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         handler = PrintOutputHandler(backend, circuit=cir, cont_method=contraction_method)
     elif handler_name == "file":
         handler = FileOutputHandler(backend, circuit=cir, cont_method=contraction_method)
+    elif handler_name == "hybrid":
+        handler = HybridOutputHandler(backend, circuit=cir, cont_method=contraction_method)
 
     # Read and prepare the circuit
     tn, all_indices_lbl, depth = cir_2_tn_lbl(cir)
@@ -1210,7 +1273,10 @@ def simulate(cir, is_input_closed=True, is_output_closed=True, use_tetris=False,
         add_outputs(tn, state, n)
 
     # Print init handler
-    handler.print_init(n_indices if use_slicing else 0)
+    handler.print_init(
+        n_indices if use_slicing else 0,                                              # Number of slices
+        ["memory_no_init", "memory_after", "memory_before"]                           # Additional info we want to show
+    )
 
     # Preprocess with Tetris
     if use_tetris:

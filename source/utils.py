@@ -63,10 +63,10 @@ class OutputHandler:
         self.tool = tool
         self.sep = sep
 
-    def print_init(self, n_slices=0):
+    def print_init(self, n_slices=0, other_data=None):
         pass
 
-    def print_time_result(self, time, it=-1):
+    def print_time_result(self, time, it=-1, other_data=None):
         pass
 
     def end_printing(self):
@@ -84,7 +84,7 @@ class PrintOutputHandler(OutputHandler):
         """
         super().__init__(tool, cont_method, circuit, sep)
 
-    def print_init(self, n_slices=0):
+    def print_init(self, n_slices=0, other_data=None):
         text = "Simulating circuit"
         if n_slices > 0:
             self.using_slicing = True
@@ -93,11 +93,16 @@ class PrintOutputHandler(OutputHandler):
             text = f"Circuit {self.circuit.name} {self.sep} {text}"
         print(text)
 
-    def print_time_result(self, time, it=-1):
+    def print_time_result(self, time, it=-1, other_data=None):
         text = f"Time: {time}"
         if self.using_slicing:
             text = f"Iter: {it} {self.sep} {text}"
         print(text)
+        print("Other metrics: ")
+        print(generate_ftdd_data())
+        if other_data is not None:
+            print("Other data:")
+            print(other_data)
 
     def end_printing(self):
         print("Simulation done correctly")
@@ -117,6 +122,13 @@ class FileOutputHandler(OutputHandler):
         self.file_name = file_name
         self.path = "./source/output"
         self.file = None
+        self.other_data_name = None
+        self.metrics_to_save = [
+            "gc",
+            "unique_hits", "unique_calls", "n_nodes_final", "unique_hit_ratio",
+            "add_hits", "add_calls", "add_hit_ratio", "add_collisions",
+            "cont_hits", "cont_calls", "cont_hit_ratio", "cont_collisions",
+        ]
 
     def create_file_name(self, n_slices):
         file_name = "test"
@@ -127,7 +139,7 @@ class FileOutputHandler(OutputHandler):
         file_name = f"{self.tool}{self.sep}{file_name}"
         self.file_name = f"{file_name}.csv"
 
-    def print_init(self, n_slices=0):
+    def print_init(self, n_slices=0, other_data=None):
         import os
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -136,6 +148,8 @@ class FileOutputHandler(OutputHandler):
         if self.file_name is None:
             self.create_file_name(n_slices)
         file_path = f"{self.path}/{self.file_name}"
+        if other_data is not None:
+            self.other_data_name = other_data
         if os.path.exists(file_path):
             self.file = open(file_path, 'a')
         else:
@@ -144,17 +158,80 @@ class FileOutputHandler(OutputHandler):
             if self.using_slicing:
                 text_line = f"slice{self.sep}{text_line}"
             text_line = f"contraction_method{self.sep}n_qubits{self.sep}{text_line}"
+            for name in self.metrics_to_save:
+                text_line = f"{text_line}{self.sep}{name}"
+            if other_data is not None:
+                for name in other_data:
+                    text_line = f"{text_line}{self.sep}{name}"
             self.file.write(text_line)
             self.file.write("\n")
 
-    def print_time_result(self, time, it=-1):
+    def print_time_result(self, time, it=-1, other_data=None):
         text_line = f"{time}"
         if self.using_slicing:
             text_line = f"{it}{self.sep}{text_line}"
         n_qubits = -1 if self.circuit is None else self.circuit.num_qubits
         text_line = f"{self.cont_method}{self.sep}{n_qubits}{self.sep}{text_line}"
+        metrics = generate_ftdd_data()
+        for metric in self.metrics_to_save:
+            text_line = f"{text_line}{self.sep}{metrics[metric]}"
+        if self.other_data_name is not None:
+            for name in self.other_data_name:
+                text_line = f"{text_line}{self.sep}{other_data[name]}"
         self.file.write(text_line)
         self.file.write("\n")
 
     def end_printing(self):
         self.file.close()
+
+
+class SameFileOutputHandler(FileOutputHandler):
+    def __init__(self, tool, cont_method, circuit=None, sep="#", file_name=None):
+        """
+            Input variables:
+            tool -------> Name of the tool used to simulate
+            cont_method --> Contraction method used
+            circuit ----> Circuit in the form of 'QuantumCircuit' class of qiskit
+            sep --------> Separator for the file
+            file_name --> Name of the file to write in
+        """
+        super().__init__(tool, cont_method, circuit, sep, file_name)
+
+    def create_file_name(self, n_slices):
+        file_name = "test"
+        if self.circuit is not None:
+            split_name = self.circuit.name.split("_")
+            file_name = f"{split_name[0]}"
+            for i in range(1, len(split_name)-1):
+                file_name = f"{file_name}_{split_name[i]}"
+        if self.using_slicing:
+            file_name = f"{file_name}{self.sep}slc{self.sep}{n_slices}"
+        file_name = f"{self.tool}{self.sep}{file_name}"
+        self.file_name = f"{file_name}.csv"
+
+
+class HybridOutputHandler(OutputHandler):
+    def __init__(self, tool, cont_method, circuit=None, sep="#", file_name=None):
+        """
+            Input variables: hybrid
+            tool -------> Name of the tool used to simulate
+            cont_method --> Contraction method used
+            circuit ----> Circuit in the form of 'QuantumCircuit' class of qiskit
+            sep --------> Separator for the file
+            file_name --> Name of the file to write in
+        """
+        super().__init__(tool, cont_method, circuit, sep)
+        self.printer = PrintOutputHandler(tool, cont_method, circuit, sep)
+        self.writer = SameFileOutputHandler(tool, cont_method, circuit, sep, file_name)
+
+    def print_init(self, n_slices=0, other_data=None):
+        self.printer.print_init(n_slices, other_data)
+        self.writer.print_init(n_slices, other_data)
+
+    def print_time_result(self, time, it=-1, other_data=None):
+        self.printer.print_time_result(time, it, other_data)
+        self.writer.print_time_result(time, it, other_data)
+
+    def end_printing(self):
+        self.printer.end_printing()
+        self.writer.end_printing()
