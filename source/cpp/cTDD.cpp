@@ -319,7 +319,9 @@ std::string get_count() {
     ss << "add: " << add_computed_table.getHit() << " / " << add_computed_table.getLookups() << " / " << add_computed_table.hitRatio() << " / " << add_computed_table.getCollisions() << "\n";
     // romOlivo: Modified so it can show the number of collisions
     ss << "cont: " << cont_computed_table.getHit() << " / " << cont_computed_table.getLookups() << " / " << cont_computed_table.hitRatio() << " / " << cont_computed_table.getCollisions() << "\n";
-    ss << "Final number of nodes: " << get_unique_table_num() - 1 << ", Number of garbage collection runs: " << unique_table.getGcruns();
+    ss << "Final number of nodes: " << get_unique_table_num() - 1 << ", Number of garbage collection runs: " << unique_table.getGcruns() << "\n";
+    // @romOlivo: Prints more info about the performance of the Unique Table
+    ss << unique_table.get_performance_metrics();
     return ss.str();
 }
 

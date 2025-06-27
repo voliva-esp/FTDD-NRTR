@@ -26,6 +26,10 @@ def generate_ftdd_data():
     # Other characteristics
     gc = int(cTDD.get_count().split("\n")[3].split(": ")[2])
     n_nodes_final = int(cTDD.get_count().split("\n")[3].split(": ")[1].split(', ')[0])
+    # Unique Table performance metrics
+    max_length_in_bucket = int(cTDD.get_count().split("\n")[4].split(" / ")[0].split(": ")[1])
+    nodes_x_bucket = float(cTDD.get_count().split("\n")[4].split(" / ")[1].split(": ")[1])
+    nodes_x_used_bucket = float(cTDD.get_count().split("\n")[4].split(" / ")[2].split(": ")[1])
     return {
         "gc": gc,
         "add_hits": add_hits,
@@ -38,8 +42,11 @@ def generate_ftdd_data():
         "add_hit_ratio": add_hit_ratio,
         "add_collisions": add_collisions,
         "cont_hit_ratio": cont_hit_ratio,
+        "nodes_x_bucket": nodes_x_bucket,
         "cont_collisions": cont_collisions,
         "unique_hit_ratio": unique_hit_ratio,
+        "nodes_x_used_bucket": nodes_x_used_bucket,
+        "max_length_in_bucket": max_length_in_bucket,
     }
 
 
@@ -125,6 +132,7 @@ class FileOutputHandler(OutputHandler):
         self.other_data_name = None
         self.metrics_to_save = [
             "gc",
+            "max_length_in_bucket", "nodes_x_bucket", "nodes_x_used_bucket",
             "unique_hits", "unique_calls", "n_nodes_final", "unique_hit_ratio",
             "add_hits", "add_calls", "add_hit_ratio", "add_collisions",
             "cont_hits", "cont_calls", "cont_hit_ratio", "cont_collisions",
